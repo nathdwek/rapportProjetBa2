@@ -1,0 +1,22 @@
+##pdfLatex output files
+*.dvi
+*.aux
+*.lof
+*.toc
+*.bib
+*.log
+*.nav
+*.out
+*.snm
+*.ind
+*.idx
+*.ilg
+
+##Vim
+*.swp
+
+##Dolphin
+.directory
+
+##Mint - Backup
+*.backup
