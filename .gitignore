@@ -3,7 +3,6 @@
 *.aux
 *.lof
 *.toc
-*.bib
 *.log
 *.nav
 *.out
@@ -15,8 +14,14 @@
 ##Vim
 *.swp
 
+##Kate
+*.kate-swp
+
 ##Dolphin
 .directory
 
 ##Mint - Backup
 *.backup
+
+##Other - Personal
+tmp.bib
