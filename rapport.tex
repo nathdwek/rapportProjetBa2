@@ -2,7 +2,9 @@
 \usepackage[english,frenchb]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\renewcommand{\familydefault}{\sfdefault}
+%\renewcommand{\familydefault}{\sfdefault}
+
+\usepackage{fixltx2e}
 
 \usepackage{float}
 \usepackage{graphicx}
@@ -342,7 +344,7 @@ La première partie du projet consiste à installer ARGoS, guider un robot à un
 
 La création d'une collaboration au sein de l'essaim, le choix et l'intégration d'une communication entre robots, font partie de la seconde partie du projet. A ce niveau, grâce à une études des déplacements de base, la non-omniscience des robots peut déjà être gérée et des recherches sur la communication entre robots ont déjà été faites comme présenté au chapitre \ref{chap:AI}.
 
-\chapter{Fonctionnement du groupe}
+\chapter{Fonctionnement du groupe\cite{bapp}}
 
 \section{Général}
 
@@ -360,6 +362,16 @@ Dans un premier temps, un groupe sur facebook a été créé. C'est un moyen sim
 
 En conclusion, une compréhension de l'intelligence artificielle, du fonctionnement des robots et l'apprentissage de Lua ont permis d'atteindre les objectifs du 1er quadrimestre, ceux-ci étant de guidé les robots du nid à la source et de les programmer pour qu'ils puissent y faire des allers-retours. 
 Les prochains objectifs à atteindre sont la mise en place d'un moyen de communication et d'exploration optimale l'environnement. Quelques options vont probablement être ajoutées dont l'introduction d'un système de priorité, dans le cas ou 2 robots cherchent à s'éviter, et une batterie se déchargeant de manière différente suivant l'état du robot (au repos ou en mouvement). De plus, une étude du comportement en essaim généré par notre code sera menée afin d'évaluer l'«intelligence de l'essaim».
+
+
+
+\listofalgorithms
+
+\addcontentsline{toc}{chapter}{Tables des algorithmes}
+
+\listoffigures
+
+\addcontentsline{toc}{chapter}{\listfigurename}
 
 \nocite{*}
 

@@ -10,6 +10,9 @@
 *.ind
 *.idx
 *.ilg
+*.blg
+*.loa
+*.bbl
 
 ##Vim
 *.swp
