@@ -1,4 +1,4 @@
-\documentclass[a4paper]{report}
+\documentclass[a4paper,11pt]{report}
 \usepackage[english,frenchb]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -15,7 +15,7 @@
 \usepackage[chapter]{algorithm}
 \usepackage{algorithmic}
 \algsetup{linenodelimiter=}
-\renewcommand{\algorithmiccomment}[1]{\%#1}
+\renewcommand{\algorithmiccomment}[1]{\##1}
 
 \usepackage{amsmath}
 
@@ -297,7 +297,7 @@ Voici 3 figures qui représentent un exemple du principe utilisé. Le but est de
                 \includegraphics[width=\textwidth]{dijk3.png}
                 \caption{Mise à jour et graphe final}
         \end{subfigure}
-        \caption{Représentation d'une éxécution d'une recherche Dijkstra\label{fig:dijkstra}\cite{wikiDijkstra}}
+        \caption{Représentation d'une éxécution de Dijkstra\label{fig:dijkstra}\cite{wikiDijkstra}}
 \end{figure}
 
 
@@ -380,6 +380,6 @@ Les prochains objectifs à atteindre sont la mise en place d'un moyen de communi
 
 \bibliography{rapport}
 
-\addcontentsline{toc}{chapter}{Bibliographie}
+\addcontentsline{toc}{chapter}{\bibname}
 
 \end{document}          
