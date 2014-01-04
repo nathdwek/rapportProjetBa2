@@ -2,7 +2,8 @@
 \usepackage[english,frenchb]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-%\renewcommand{\familydefault}{\sfdefault}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
 
 \usepackage{fixltx2e}
 
@@ -34,9 +35,6 @@
 
 \input{title.tex}
 
-\tableofcontents
-
-
 \selectlanguage{english}
 \begin{abstract}
 The goal of this project was to design a swarm-intelligent behaviour for virtual robots using the ARGoS software. These robots had to explore an unknown environment with obstacles in order to ultimately loop between spots marked on the ground and a starting area. The fundamental paradigm was that a single set of rules would be followed independently by every robot, which would allow a swarm-intelligent behaviour to emerge through the robot interactions prescribed by these rules. For that to work, exploration, shortest path-finding and obstacle-avoidance algorithms were needed, along with elementary automated decision making, communication and odometry. These concepts were implemented using the ARGoS loop approach, which means that the same sequence of actions takes place at every step, while only events occurring during that step can influence these actions. However, a Dijkstra path-finding algorithm, which would only execute once before every trip while always providing the shortest trajectory, was also considered. A first working solution was produced using the Lua language, then put to the test and could quickly be enhanced accordingly thanks to the flexible framework. This allowed robots to loop between a starting area and spots of known position while avoiding collisions, and information was gathered on parameters meaningful for the experiment. Future development should be focused on optimizing these parameters and enabling robots to explore a fully unknown environment.
@@ -46,6 +44,8 @@ The goal of this project was to design a swarm-intelligent behaviour for virtual
 \begin{abstract}
 Le but de ce projet était de créer une intelligence en essaim pour des robots modélisés dans le simulateur ARGoS. Ceux-ci devaient explorer un environnement inconnu qui comportait des obstacles afin d'ensuite faire des allers-retours entre des zones marquées aux sols et leur nid de départ. Le principe de base était que le même ensemble de règles devrait être suivi de manière indépendante par chaque robot; la caractéristique intelligente de l'ensemble de robots devant émerger à travers les interactions entre robots prescrites par ces règles. Pour cela, des procédures d'exploration, de recherche du plus court chemin et d'évitement furent nécessaires ainsi que des principes de base de prise de décision, d'odométrie et de communication. Ces concepts furent mis en pratique en utilisant l'approche loop d'ARGoS, qui implique que le robot exécute la même séquence d'opérations à chaque pas. Cependant, une recherche du plus court chemin Dijkstra, qui ne serait faite qu'une seule fois avant chaque trajet d'un robot, tout en trouvant toujours le chemin le plus court, fut aussi considéré. Une première solution fonctionnelle en Lua fut construite, testée et ensuite améliorée en conséquence grâce au turnaround loop très court offert par ARGoS. Cette solution permet aujourd'hui au robot de faire des allers-retours entre leur nid et une ou plusieurs ressources dont ils connaissent la position à l'avance, tout en évitant les collisions dans un environnement inconnu. De plus, des informations ont été collectées sur des paramètres influençant l'expérience. La deuxième partie du quadrimestre devrait être consacrée à l'optimisation de cette solution et à permettre au robot d'explorer un environnement afin de trouver la position des sources à exploiter. 
 \end{abstract}
+
+\tableofcontents
 
 \chapter{Introduction}
 
@@ -71,12 +71,17 @@ Pour résoudre la problématique donnée, le projet a été décomposé en trois
 Afin de mener à bien l'objectif énoncé dans l'introduction, les robots doivent se comporter de manière intelligente. Le plus important est l'interaction avec l'environnement. En effet, le choix de la bonne action est cruciale. Il est cependant délicat de définir qu'une seule bonne action. Ceci est développé plus bas, en introduisant un «nouveau concept» qui est la rationalité. 
 De manière générale, un robot peut être assimilé à un agent qui reçoit des «percepts» par l'intermédiaire de ses capteurs. L'agent réagit alors en exerçant une action sur l'environnement grâce à ses effecteurs.
 \begin{figure}[h!]
-   \includegraphics[width=\textwidth]{cycleInteractionAI.png}
-      \caption{Cycle d'interaction entre l'environnement et les agents}
+  \centering
+  \includegraphics[width=0.7\textwidth]{cycleInteractionAI.png}
+    \caption{Cycle d'interaction entre l'environnement et les agents}
 \end{figure}
 La description des différents capteurs et effecteurs du robot est faite ci-dessous dans le chapitre \ref{chap:argosFootbot}.
 
-Comme énoncé précédemment la rationalité d'un agent peut être délicate à mesurer. D'après la traduction française de «Artificial Intelligence: A Modern Approach»: «La rationalité n'est pas synonyme de perfection, la rationalité maximise la performance espérée tandis que la perfection maximise la performance réelle».\cite{AIBrique}
+Comme énoncé précédemment la rationalité d'un agent peut être délicate à mesurer. D'après \cite{AIBrique}:
+\begin{quote}
+  \og{}La rationalité n'est pas synonyme de perfection, la rationalité maximise la performance espérée tandis que la perfection maximise la performance réelle.\fg{}
+\end{quote}
+
 
 En effet, dans un groupe composé de plusieurs agents, un choix d'action peut s'avérer bénéfique pour un agent mais mauvais pour l'ensemble du groupe. C'est pourquoi il est préférable de concevoir les mesures de performance en fonction de ce que l'on souhaite obtenir dans l'environnement et non en fonction de la façon dont devrait se comporter un agent.
 
@@ -109,7 +114,7 @@ Le prise en charge de la communication des robots ne sera traitée qu'au second 
 
 \chapter{Présentation du simulateur ARGoS et des footbots\label{chap:argosFootbot}}
 
-Dans le projet, on a à notre disposition des robots bien spécifiques (figure se trouvant ci-dessous). Ceux-ci possèdent des capteurs (des caméras, senseurs, scanners) et des effecteurs (des roues motrices, une balise et une pince ). Les capteurs leurs permettent de recevoir des informations émanant de l'environnement et les effecteurs leurs donnent la possibilité d’interagir avec cet environnement.
+Dans le projet, on a à notre disposition des robots bien spécifiques (figure se trouvant ci-dessous). Ceux-ci possèdent des capteurs (des caméras, senseurs, scanners) et des effecteurs (des roues motrices, une balise et une pince). Les capteurs leurs permettent de recevoir des informations émanant de l'environnement et les effecteurs leurs donnent la possibilité d’interagir avec cet environnement.
 \begin{figure}[h!]
    \includegraphics[width=\textwidth]{footbot.png}
       \caption{Les différents senseurs et actuateurs d'un footbot\cite{argosSite1}}
@@ -130,7 +135,7 @@ D'autre part, Lua est proche du langage Python. Ce dernier a été étudié en B
 
 Il faut aussi souligner le fait que la nouvelle version d'ARGoS permet de compiler un fichier Lua en un seul clic grâce au compilateur intégré à ARGoS. Pour compiler un fichier C++, il faut passer par le terminal et appeler le compilateur pour ensuite exécuter le fichier compilé dans ARGoS. Cette étape supplémentaire peut être néfaste à la productivité sachant que l'on requiert souvent de tester le code qui a été écrit. Cette nouvelle version possède aussi, par défaut, un contrôleur Lua qui associe les différents capteurs à des fonctions de base exploitable dans un code Lua. Sur les quatre fonctions prédéfinies de LUA combiné a ARGoS (init, step, reset et destroy), les trois premières sont primordiales pour qu'ARGoS fonctionne. En effet ces fonctions s’exécutent une à une sur un seul robot puis l'autre et ainsi de suite. En C++, il aurait fallu réaliser cette étape en plus et même changer l'implémentation des fonctions de base.
 
-En vue des raisons énoncées ci-dessus, Lua a été choisi comme langage de programmation. 
+Au vu des raisons énoncées ci-dessus, Lua a été choisi comme langage de programmation. 
 
 \chapter{Trajectoire}
 
@@ -145,7 +150,7 @@ Tout d'abord il est intéressant de se pencher sur le lien entre les paramètres
   \begin{center}
     \includegraphics[width=0.15\textwidth]{robotWheels.png}
   \end{center}
-  \caption{Signification physique de \(v_r,\: v_l,\: v_g \; et \; \omega_g \)\cite{argosSite1}}
+  \caption{Signification physique de \(v_r,\: v_l,\: v_g \; et \; \omega_g \) \cite{argosSite1}}
 \end{wrapfigure}
 L'effecteur dont un footbot dispose afin de se déplacer est une paire de roues dont les vitesses peuvent être fixées de manière indépendante. A chaque instant, les seuls deux mouvements auxquels peut accéder le robot sont donc une translation parallèle aux roues et une rotation autour d'un point au milieu de l'axe des roues. La mécanique\cite{meca} nous indique que la composition de ces deux mouvements est suffisante pour permettre au robot de se déplacer librement dans un plan mais surtout, elle nous donne la relation entre les vitesses des deux roues et la vitesse générale ainsi que la vitesse de rotation du robot:
 \begin{equation}
@@ -209,13 +214,13 @@ La manière la plus directe de permettre au robot d'éviter des obstacles quels 
 \end{algorithm}
 
 Où avoidance(proximity sensor reading) fixe la routine d'évitement du robot. Son implémentation est très libre et peut fortement varier en fonction du capteur utilisé pour détecter les obstacles. On peut par exemple utiliser le senseur proximity du footbot, qui associe à 24 directions autour du robot une valeur entre zéro et un: une valeur zéro indique qu'aucun obstacle n'est perçu dans la direction donnée tandis qu'une valeur supérieure indique qu'un objet a été détecté. Cette valeur augmente au fur et à mesure que le robot se rapproche de l'obstacle.\cite{argosSite1} Dans notre projet nous avons choisi
-\[avoidance(direction, proximity)=
+\[avoidance(dir, prox)=
   \begin{cases}
-      \frac{-\alpha +(1-proximity)^{\beta}\cdot direction}{11}SPEED & \text{si }direction \leq 12\\
-      \frac{(22+\alpha )-(1-proximity)^{\beta}\cdot (25-direction)}{11}SPEED & \text{si }direction \geq 12\\
+      \frac{-\alpha +(1-prox)^{\beta}\cdot dir}{11}SPEED & \text{si }dir \leq 12\\
+      \frac{(22+\alpha )-(1-prox)^{\beta}\cdot (25-dir)}{11}SPEED & \text{si }dir \geq 12\\
   \end{cases}
 \]
-Où \(1 \leq \alpha \leq 12 \) est un paramètre qui fixe l'influence de la direction de l'obstacle le plus proche et \(0 \leq \beta \) fixe l'influence de la proximité de cette obstacle. Cet évitement est partiellement tiré des exemples fourni sur le site du cours présentant ARGoS.\cite{argosSite1}
+Où $ 1 \leq dir \leq 12 $ est la direction de l'obstacle perçu le plus proche et \hbox{$0 \leq prox \leq 1$} donne la proximité de cette obstacle. Comme présenté plus haut, ce sont les deux informations dont on dispose si l'on utilise le capteur de proximité.  \(1 \leq \alpha \leq 12 \) est un paramètre qui fixe l'influence de la direction de l'obstacle le plus proche et \(0 \leq \beta \) fixe l'influence de la proximité de cette obstacle. Cet évitement est partiellement tiré des exemples fourni sur le site du cours présentant ARGoS.\cite{argosSite1}
 
 Grâce à cette routine d'évitement, ainsi qu'en utilisant l'algorithme présenté plus haut, il est déjà possible de produire une solution fonctionnelle à la partie déplacement du cahier des charges, même si on peut améliorer cette solution en fonction de la connaissance de son environnement dont dispose le robot.
 
@@ -362,8 +367,6 @@ Dans un premier temps, un groupe sur facebook a été créé. C'est un moyen sim
 
 En conclusion, une compréhension de l'intelligence artificielle, du fonctionnement des robots et l'apprentissage de Lua ont permis d'atteindre les objectifs du 1er quadrimestre, ceux-ci étant de guidé les robots du nid à la source et de les programmer pour qu'ils puissent y faire des allers-retours. 
 Les prochains objectifs à atteindre sont la mise en place d'un moyen de communication et d'exploration optimale l'environnement. Quelques options vont probablement être ajoutées dont l'introduction d'un système de priorité, dans le cas ou 2 robots cherchent à s'éviter, et une batterie se déchargeant de manière différente suivant l'état du robot (au repos ou en mouvement). De plus, une étude du comportement en essaim généré par notre code sera menée afin d'évaluer l'«intelligence de l'essaim».
-
-
 
 \listofalgorithms
 
