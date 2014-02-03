@@ -1,11 +1,12 @@
-\documentclass[a4paper,11pt]{report}
+\documentclass[a4paper,12pt]{report}
+\usepackage{fixltx2e}
 \usepackage[english,frenchb]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{helvet}
 \renewcommand{\familydefault}{\sfdefault}
 
-\usepackage{fixltx2e}
+
 
 \usepackage{float}
 \usepackage{graphicx}
@@ -22,10 +23,20 @@
 \usepackage{perpage}
 \MakePerPage{footnote}
 
+\usepackage[title,titletoc]{appendix}
+
 \bibliographystyle{alpha}
+
 
 \newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
 
+\newcommand{\appsec}[1]{\newpage \section{#1}}
+%syntax is:
+%\begin{subappendices}
+%  \appsec{appendix title}
+%\end{subappendices}
+
+\pagestyle{headings}
 
 
 \title{Robot en essaim: explorez}
@@ -49,7 +60,7 @@ Le but de ce projet était de créer une intelligence en essaim pour des robots 
 
 \chapter{Introduction}
 
-Le but du projet est d'établir un comportement en essaim à des robots afin qu'ils puissent explorer un environnement non connu à l'avance, et naviguer entre un nid et une ressource, qu'ils exploiteront.\cite{cahierCharges} Le nid sera représenté par une zone peinte au sol et les ressources par une lumière dans l'arène. Le nid sera la zone où les robots pourront recharger leur batterie. Effectivement, le fait que les robots possèdent une batterie, limitée à un aller-retour du centre à l’extrémité de l'arène, devra également être pris en compte. Des obstacles seront également présents dans l'arène. Les robots devront donc également être capable d'éviter tout type d'obstacles. ARGoS, un simulateur développé par le laboratoire IRIDIA, sera utilisé afin de simuler le comportement des robots dans l'arène.
+Le but du projet est d'établir un comportement en essaim à des robots afin qu'ils puissent explorer un environnement non connu à l'avance, et naviguer entre un nid et une ressource, qu'ils exploiteront \cite{cahierCharges}. Le nid sera représenté par une zone peinte au sol et les ressources par une lumière dans l'arène. Le nid sera la zone où les robots pourront recharger leur batterie. Effectivement, le fait que les robots possèdent une batterie, limitée à un aller-retour du centre à l’extrémité de l'arène, devra également être pris en compte. Des obstacles seront également présents dans l'arène. Les robots devront donc également être capable d'éviter tout type d'obstacles. ARGoS, un simulateur développé par le laboratoire IRIDIA, sera utilisé afin de simuler le comportement des robots dans l'arène.
 
 \section{Intérêt du projet}
 
@@ -96,9 +107,9 @@ Maintenant qu'une présentation générale de l'intelligence artificielle a ét�
 
 Cet algorithme est basé sur le comportement des fourmis dont une des particularités est la communication au travers de l'environnement par dépôts de phéromones.
 
-L'algorithme se présente de la manière suivante. Pour commencer, une exploration de l'environnement est faite par les fourmis. Si l'une d'entre elles trouve une source, elle déposera, lors de son retour au nid, des phéromones tout au long du chemin qu'elle emprunte. Dès lors, lorsque que d'autres fourmis partiront à la recherche de nourriture, elles auront tendance à suivre le chemin  marqué de phéromones. Et à leur retour à la colonie, elles renforceront cette piste.\cite{wikiFourmi}
+L'algorithme se présente de la manière suivante. Pour commencer, une exploration de l'environnement est faite par les fourmis. Si l'une d'entre elles trouve une source, elle déposera, lors de son retour au nid, des phéromones tout au long du chemin qu'elle emprunte. Dès lors, lorsque que d'autres fourmis partiront à la recherche de nourriture, elles auront tendance à suivre le chemin  marqué de phéromones. Et à leur retour à la colonie, elles renforceront cette piste \cite{wikiFourmi}.
 
-Cet algorithme illustre une communication indirecte d'un essaim et la manière dont ce dernier est influencé.\cite{communicationFourmis} L'autre algorithme, illustrant le comportement d'une structure organisée, est l'algorithme des abeilles.
+Cet algorithme illustre une communication indirecte d'un essaim et la manière dont ce dernier est influencé \cite{communicationFourmis}. L'autre algorithme, illustrant le comportement d'une structure organisée, est l'algorithme des abeilles.
 
 \section{Algorithme des abeilles}
 
@@ -112,12 +123,12 @@ D'une part, en s'inspirant de la communication des abeilles, les robots pourraie
 
 Le prise en charge de la communication des robots ne sera traitée qu'au second quadrimestre. Mais tout ceci est concevable car les robots disposent d'effecteurs capables d'interagir sur l'environnement et de capteurs capables de cerner les différentes modifications de ce dernier.
 
-\chapter{Présentation du simulateur ARGoS et des footbots\label{chap:argosFootbot}}
+\chapter[ARGoS et les footbots]{Présentation du simulateur ARGoS et des footbots\label{chap:argosFootbot}}
 
 Dans le projet, on a à notre disposition des robots bien spécifiques (figure se trouvant ci-dessous). Ceux-ci possèdent des capteurs (des caméras, senseurs, scanners) et des effecteurs (des roues motrices, une balise et une pince). Les capteurs leurs permettent de recevoir des informations émanant de l'environnement et les effecteurs leurs donnent la possibilité d’interagir avec cet environnement.
 \begin{figure}[h!]
    \includegraphics[width=\textwidth]{footbot.png}
-      \caption{Les différents senseurs et actuateurs d'un footbot\cite{argosSite1}}
+      \caption{Les différents senseurs et actuateurs d'un footbot \cite{argosSite1}}
 \end{figure}
 
 Le comportement en essaim des robots devra être simulé dans ARGoS. Ce dernier est un simulateur de robots open source qui a initialement été développé au sein du projet Swarmanoid. Pour l'exécuter, un fichier XML est nécessaire. Il permet la configuration du programme pour une expérience spécifique. Pour dicter la conduite que doivent suivre les robots, un script est nécessaire. Ce script peut être écrit dans deux langages que gère ARGoS: C++ et Lua.
@@ -131,7 +142,7 @@ Lors de la présentation du simulateur ARGoS, deux choix de langage de programma
 Après s’être familiarisé avec ces langages, la décision s'est portée sur Lua pour diverses raisons.
 
 D'une part, les principaux avantages de C++, notamment, sa rapidité d’exécution et ses grandes librairies, ne semblaient pas primordiaux dans le cadre de ce projet. À cela s'ajoute les difficultés que ce langage aurait introduites. Plus spécifiquement, de meilleures connaissance aurait été nécessaire pour programmer, sans compter le temps perdu dans les débuguage du code.
-D'autre part, Lua est proche du langage Python. Ce dernier a été étudié en BA1 à l'école polytechnique de Bruxelles. Comme Lua est un langage de scripting, il était plus adapté aux besoins du groupe grâce à sa facilité de concevoir des prototypes de programmes rapidement. Sa simplicité de compréhension a aussi favorisé une plus grande clarté du code des autres membres, ce qui a permis de dédier plus de temps à l’avancement du projet.\cite{compC++,compLua}
+D'autre part, Lua est proche du langage Python. Ce dernier a été étudié en BA1 à l'école polytechnique de Bruxelles. Comme Lua est un langage de scripting, il était plus adapté aux besoins du groupe grâce à sa facilité de concevoir des prototypes de programmes rapidement. Sa simplicité de compréhension a aussi favorisé une plus grande clarté du code des autres membres, ce qui a permis de dédier plus de temps à l’avancement du projet \cite{compC++,compLua}.
 
 Il faut aussi souligner le fait que la nouvelle version d'ARGoS permet de compiler un fichier Lua en un seul clic grâce au compilateur intégré à ARGoS. Pour compiler un fichier C++, il faut passer par le terminal et appeler le compilateur pour ensuite exécuter le fichier compilé dans ARGoS. Cette étape supplémentaire peut être néfaste à la productivité sachant que l'on requiert souvent de tester le code qui a été écrit. Cette nouvelle version possède aussi, par défaut, un contrôleur Lua qui associe les différents capteurs à des fonctions de base exploitable dans un code Lua. Sur les quatre fonctions prédéfinies de LUA combiné a ARGoS (init, step, reset et destroy), les trois premières sont primordiales pour qu'ARGoS fonctionne. En effet ces fonctions s’exécutent une à une sur un seul robot puis l'autre et ainsi de suite. En C++, il aurait fallu réaliser cette étape en plus et même changer l'implémentation des fonctions de base.
 
@@ -152,7 +163,7 @@ Tout d'abord il est intéressant de se pencher sur le lien entre les paramètres
   \end{center}
   \caption{Signification physique de \(v_r,\: v_l,\: v_g \; et \; \omega_g \) \cite{argosSite1}}
 \end{wrapfigure}
-L'effecteur dont un footbot dispose afin de se déplacer est une paire de roues dont les vitesses peuvent être fixées de manière indépendante. A chaque instant, les seuls deux mouvements auxquels peut accéder le robot sont donc une translation parallèle aux roues et une rotation autour d'un point au milieu de l'axe des roues. La mécanique\cite{meca} nous indique que la composition de ces deux mouvements est suffisante pour permettre au robot de se déplacer librement dans un plan mais surtout, elle nous donne la relation entre les vitesses des deux roues et la vitesse générale ainsi que la vitesse de rotation du robot:
+L'effecteur dont un footbot dispose afin de se déplacer est une paire de roues dont les vitesses peuvent être fixées de manière indépendante. A chaque instant, les seuls deux mouvements auxquels peut accéder le robot sont donc une translation parallèle aux roues et une rotation autour d'un point au milieu de l'axe des roues. La mécanique \cite{meca} nous indique que la composition de ces deux mouvements est suffisante pour permettre au robot de se déplacer librement dans un plan mais surtout, elle nous donne la relation entre les vitesses des deux roues et la vitesse générale ainsi que la vitesse de rotation du robot:
 \begin{equation}
 \begin{cases}
 v_g=\frac{v_r+v_l}{2}\\
@@ -220,7 +231,7 @@ Où avoidance(proximity sensor reading) fixe la routine d'évitement du robot. S
       \frac{(22+\alpha )-(1-prox)^{\beta}\cdot (25-dir)}{11}SPEED & \text{si }dir \geq 12\\
   \end{cases}
 \]
-Où $ 1 \leq dir \leq 12 $ est la direction de l'obstacle perçu le plus proche et \hbox{$0 \leq prox \leq 1$} donne la proximité de cette obstacle. Comme présenté plus haut, ce sont les deux informations dont on dispose si l'on utilise le capteur de proximité.  \(1 \leq \alpha \leq 12 \) est un paramètre qui fixe l'influence de la direction de l'obstacle le plus proche et \(0 \leq \beta \) fixe l'influence de la proximité de cette obstacle. Cet évitement est partiellement tiré des exemples fourni sur le site du cours présentant ARGoS.\cite{argosSite1}
+Où $ 1 \leq dir \leq 12 $ est la direction de l'obstacle perçu le plus proche et \hbox{$0 \leq prox \leq 1$} donne la proximité de cette obstacle. Comme présenté plus haut, ce sont les deux informations dont on dispose si l'on utilise le capteur de proximité.  \(1 \leq \alpha \leq 12 \) est un paramètre qui fixe l'influence de la direction de l'obstacle le plus proche et \(0 \leq \beta \) fixe l'influence de la proximité de cette obstacle. Cet évitement est partiellement tiré des exemples fourni sur le site du cours présentant ARGoS \cite{argosSite1}.
 
 Grâce à cette routine d'évitement, ainsi qu'en utilisant l'algorithme présenté plus haut, il est déjà possible de produire une solution fonctionnelle à la partie déplacement du cahier des charges, même si on peut améliorer cette solution en fonction de la connaissance de son environnement dont dispose le robot.
 
@@ -297,7 +308,7 @@ Voici 3 figures qui représentent un exemple du principe utilisé. Le but est de
                 \includegraphics[width=\textwidth]{dijk3.png}
                 \caption{Mise à jour et graphe final}
         \end{subfigure}
-        \caption{Représentation d'une éxécution de Dijkstra\label{fig:dijkstra}\cite{wikiDijkstra}}
+        \caption{\label{fig:dijkstra}Représentation d'une éxécution de Dijkstra \cite{wikiDijkstra}}
 \end{figure}
 
 
@@ -333,7 +344,7 @@ En vue de la prochaine étape (la non omniscience des robots), le choix d'implé
 
 \chapter{Résultats obtenus}
 
-La première partie du projet consiste à installer ARGoS, guider un robot à un point donné et remplir l'objectif lorsque les robots sont omniscients comme le présente le cahier des charges.\cite{cahierCharges} Celle-ci a, en effet, été achevée. L'installation a été réalisée avec succès par tous les membres du groupe. Les robots parviennent aux points désignés tout en évitant les obstacles. De plus, ils peuvent, étant omniscients, faire des allers-retours entre le source et le nid. Les robots ont aussi la faculté de détecter une source grâce à ses senseurs et de tenir compte de l'épuisement de leur batterie. Ceci est illustré sur la figure \ref{fig:ourArgos}. Dans le cas de la figure \ref{fig:argosNest}, on  peut observer les robots qui se dirigent vers la source. Sur l'autre figure, les robots sont  de retour au nid.
+La première partie du projet consiste à installer ARGoS, guider un robot à un point donné et remplir l'objectif lorsque les robots sont omniscients comme le présente le cahier des charges \cite{cahierCharges}. Celle-ci a, en effet, été achevée. L'installation a été réalisée avec succès par tous les membres du groupe. Les robots parviennent aux points désignés tout en évitant les obstacles. De plus, ils peuvent, étant omniscients, faire des allers-retours entre le source et le nid. Les robots ont aussi la faculté de détecter une source grâce à ses senseurs et de tenir compte de l'épuisement de leur batterie. Ceci est illustré sur la figure \ref{fig:ourArgos}. Dans le cas de la figure \ref{fig:argosNest}, on  peut observer les robots qui se dirigent vers la source. Sur l'autre figure, les robots sont  de retour au nid.
 
 \begin{figure}[h!]
         \centering
@@ -349,7 +360,7 @@ La première partie du projet consiste à installer ARGoS, guider un robot à un
 
 La création d'une collaboration au sein de l'essaim, le choix et l'intégration d'une communication entre robots, font partie de la seconde partie du projet. A ce niveau, grâce à une études des déplacements de base, la non-omniscience des robots peut déjà être gérée et des recherches sur la communication entre robots ont déjà été faites comme présenté au chapitre \ref{chap:AI}.
 
-\chapter{Fonctionnement du groupe\cite{bapp}}
+\chapter[Fonctionnement du groupe]{Fonctionnement du groupe \cite{bapp}}
 
 \section{Général}
 
