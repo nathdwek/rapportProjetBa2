@@ -21,6 +21,13 @@
 
 \usepackage{amsmath}
 
+\usepackage{listings}
+\lstset{defaultdialect=[5.2]Lua}
+
+\addto\captionsfrenchb{%
+  \renewcommand{\listalgorithmname}{Algorithmes}%
+}
+
 
 \usepackage{perpage}
 \MakePerPage{footnote}
@@ -91,7 +98,11 @@
 
 \listofalgorithms
 
-\addcontentsline{toc}{chapter}{Tables des algorithmes}
+\addcontentsline{toc}{chapter}{\listalgorithmname}
+
+\lstlistoflistings
+
+\addcontentsline{toc}{chapter}{\lstlistlistingname}
 
 \listoffigures
 

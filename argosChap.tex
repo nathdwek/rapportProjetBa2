@@ -22,4 +22,18 @@ Enfin sa simplicité et sa lisibilité sont des aspects très importants dans un
 
 Au vu des raisons énoncées ci-dessus, Lua a été choisi comme langage de programmation.
 
-\section{Structure d'un comportement en lua}
+\section{Structure d'un comportement en Lua}
+
+\begin{lstlisting}[language=Lua,frame=single, caption=Structure de base d'un comportement en Lua]
+--[[ This function is executed every time you press 
+the 'execute' button ]]
+function init()
+
+end
+
+--[[ This function is executed at each time step
+     It must contain the logic of your controller ]]
+function step()
+
+end
+\end{lstlisting}
