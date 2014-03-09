@@ -1,6 +1,9 @@
 \documentclass[a4paper,12pt]{report}
 \usepackage{fixltx2e}
 \usepackage[english,frenchb]{babel}
+\addto\captionsfrenchb{%
+  \renewcommand{\listalgorithmname}{Algorithmes}%
+}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{helvet}
@@ -23,11 +26,6 @@
 
 \usepackage{listings}
 \lstset{defaultdialect=[5.2]Lua}
-
-\addto\captionsfrenchb{%
-  \renewcommand{\listalgorithmname}{Algorithmes}%
-}
-
 
 \usepackage{perpage}
 \MakePerPage{footnote}
