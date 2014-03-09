@@ -1,0 +1,25 @@
+\section{Capteurs et actuateurs des footbots}
+
+Comme présenté plus haut, les capteurs et actuateurs des agents déterminent bien évidemment les informations qu'ils sont capables de recuellir et les actions qu'ils peuvent effectuer.
+
+\begin{figure}[htb]
+   \includegraphics[width=\textwidth]{footbot.png}
+      \caption{Les différents senseurs et actuateurs d'un footbot~\cite{argosSite1}}
+\end{figure}
+
+Dans le cadre du projet, on considère qu'il suffit que le robot passe sur une <<source>> pour l'exploiter. Les différents capteurs et actuateurs intéressants sont donc les roues, le senseur de proximité et le \emph{distance scanner} pour la partie déplacement, le \emph{ground sensor} pour la partie exploration (car il permet de lire la couleur du sol), et enfin les différentes LED et le système \emph{range and bearing} ainsi que les capteurs associés pour la partie communication.
+
+Comme annoncé dans l'introduction, l'essaim de robots devra être simulé dans ARGoS, un simulateur de robots développé notamment par le département IRIDIA de l'ULB. Ce simulateur a besoin de deux fichiers pour lancer une expérience: un fichier XML qui permet de configurer l'arène et l'expérience en général (moteur physique, capteurs et actuateurs disponibles, \ldots) d'une part, et un fichier dictant le (même) comportement individuel de chaque robot d'autre part. Pour l'instant, les instructions peuvent être écrites soit en C++, soit en Lua.
+
+
+\section{Choix du langage informatique}
+
+D'une part, les principaux avantages de C++, notamment, sa rapidité exécution et ses nombreuses librairies, ne sont pas primordiaux dans le cadre de ce projet. De plus, il nous est moins familier que Lua qui se rapproche fortement de python tant au niveau de la syntaxe que de l'approche fonctionnelle.
+
+Lua étant langage de scripting, il est plus adapté aux besoins du groupe car la réalisation du projet passe par de nombreuses petites expérimentations mais ne devrait pas aboutir à un comportement final comportant de très nombreuses lignes de code. En effet, ce type de langage permet de concevoir des prototypes de programmes rapidement.
+
+Enfin sa simplicité et sa lisibilité sont des aspects très importants dans un travail de groupe où chacun doit être capable de comprendre et d'améliorer le comportement en développement \cite{compC++,compLua}.
+
+Au vu des raisons énoncées ci-dessus, Lua a été choisi comme langage de programmation.
+
+\section{Structure d'un comportement en lua}

@@ -1,0 +1,23 @@
+\section{Gestion de l'autonomie}
+Une condition sur l'autonomie des robots a été imposée: l'autonomie est fixée dans le temps, ce qui signifie que leur batterie se décharge de manière constante à chaque pas d'ARGoS. Une valeur chiffrée n'a pas été imposée, mais les robots doivent juste être capables d'effectuer un aller-retour vers un point le plus éloigné de leur nid de départ à leur vitesse de régime. Une fois la batterie écoulée, le robot est rendu incapable de se déplacer mais pourra peut-être être dépanné par un autre membre de l'essaim dans le futur.
+
+Puisque pour le moment le seul but d'un robot est d'exploiter une ressource, celui-ci peut avorter un aller retour dès qu'il estime qu'il n'est plus capable d'atteindre son but et de revenir ensuite à son nid.
+
+\begin{algorithm}                    
+\caption{Battery handling}
+\label{algo:batterie}
+\begin{algorithmic}[1]
+  \REQUIRE \(0 \leq battery \leq 100 :=\) the battery left of the robot
+  \ENSURE footbot tries to get back to nest when current goal judged not safely reachable
+  \WHILE{goal not reached}
+    \STATE update footbot position and battery
+    \STATE \(cost \leftarrow evaluate\;cost(position,\;goal,\;[battery])\) \COMMENT{The cost of what is left to do}
+    \IF{\(cost > battery\)}
+      \STATE \(goal \leftarrow nest\) \COMMENT{Get back to the nest. If the footbot is already on its way back, this doesn't do anything. Appropriate to try to get to the nest when you know you don't have enough to get there?}
+    \ENDIF
+  \ENDWHILE
+\end{algorithmic}
+\end{algorithm}
+Où evaluate cost(position, goal, [battery]) est la fonction qui évalue l'énergie nécessaire à l'accomplissement du reste du trajet. On peut par exemple utiliser la distance à vol d'oiseau restante à parcourir accompagnée d'un facteur de sécurité, ou alors utiliser une approche heuristique utilisant le rapport entre la batterie utilisée jusqu'au step courant et le déplacement net parcouru vers le but.
+
+En vue de la prochaine étape (la non omniscience des robots), le choix d'implémentation de la batterie autorise des sacrifices, c'est à dire, si un robot, étant à une position, estime devoir aller à une autre position et si sa batterie le lui permet, il ira à cette nouvelle position, sans toutefois vérifier qu'en y allant il pourra rentrer à la base recharger sa batterie. Ce choix favorise l'exploration de l'arène en mettant en avant la réussite de l'ensemble du groupe et non la réussite personnelle, pouvant être interprété comme la recharge de la batterie. Cependant des modifications doivent encore être apportées car nous ne pouvons nous permettre de sacrifier l'ensemble des robots, faute de quoi l'objectif ne sera pas atteint.
