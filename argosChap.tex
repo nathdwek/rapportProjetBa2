@@ -16,7 +16,7 @@ Comme annoncé dans l'introduction, l'essaim de robots devra être simulé dans 
 
 D'une part, les principaux avantages de C++, notamment, sa rapidité exécution et ses nombreuses librairies, ne sont pas primordiaux dans le cadre de ce projet. De plus, il nous est moins familier que Lua qui se rapproche fortement de python tant au niveau de la syntaxe que de l'approche fonctionnelle.
 
-Lua étant langage de scripting, il est plus adapté aux besoins du groupe car la réalisation du projet passe par de nombreuses petites expérimentations mais ne devrait pas aboutir à un comportement final comportant de très nombreuses lignes de code. En effet, ce type de langage permet de concevoir des prototypes de programmes rapidement.
+Lua étant un langage de scripting, il est plus adapté aux besoins du groupe car la réalisation du projet passe par de nombreuses petites expérimentations mais ne devrait pas aboutir à un comportement final comportant de très nombreuses lignes de code. En effet, ce type de langage permet de concevoir des prototypes de programmes rapidement.
 
 Enfin sa simplicité et sa lisibilité sont des aspects très importants dans un travail de groupe où chacun doit être capable de comprendre et d'améliorer le comportement en développement \cite{compC++,compLua}.
 
@@ -24,7 +24,7 @@ Au vu des raisons énoncées ci-dessus, Lua a été choisi comme langage de prog
 
 \section{Structure d'un comportement en Lua}
 
-Le \emph{template} de code fourni par ARGoS montre les deux fonctions les plus importantes exigées par ARGoS. La fonction \emph{init} qui est éxécutée une fois par chaque footbot au début de l'expérience, et la fonction \emph{step} qui est éxécutée par chaque footbot à chaque pas de la simulation. C'est bien évidemment cette fonction \emph{step} qui représente presqu'entièrement le comportement du robot. Deux types d'évènements peuvent modifier la façon dont cette fonction step s'éxécute: d'une part, les percepts ayant lieu au cours du pas de simulation, et d'autre part un ensemble de variables globales (qui survivent après l'éxécution de la fonction \emph{step} et sont donc accessibles par les instances suivante de cette fonction) qui détermine entièrement l'état du robot lorsque celui-ci entame ce pas de simulation. Enfin, la fonction step peut agir en retour sur ces variables d'état.~\cite{argosSite1}
+Le \emph{template} de code fourni par ARGoS présenté plus bas montre les deux fonctions les plus importantes parmi celles exigées par ARGoS. La fonction \emph{init} qui est éxécutée une fois par chaque footbot au début de l'expérience, et la fonction \emph{step} qui est éxécutée par chaque footbot à chaque pas de la simulation. C'est bien évidemment cette fonction \emph{step} qui représente presqu'entièrement le comportement du robot. Deux types d'évènements peuvent modifier la façon dont cette fonction step s'éxécute: d'une part, les percepts ayant lieu au cours du pas de simulation, et d'autre part un ensemble de variables globales (qui survivent après l'éxécution de la fonction \emph{step} et sont donc accessibles par les instances suivante de cette fonction) qui détermine entièrement l'état du robot lorsque celui-ci entame ce pas de simulation. Enfin, la fonction step peut agir en retour sur ces variables d'état.~\cite{argosSite1}
 \begin{lstlisting}[language=Lua,frame=single, caption=Structure de base d'un comportement en Lua]
 --[[ This function is executed every time you press 
 the 'execute' button ]]
