@@ -89,7 +89,7 @@ Cet évitement d'obstacles est directement utilisé dans notre projet. Son impl�
 La manière la plus directe de permettre au footbot d'éviter des obstacles ou autres robots lorqu'ils sont dangereusement proches est d'alors exécuter une routine d'évitement à la place de la routine de convergence précédente.
 \begin{algorithm}
 \label{obstacleConvergence}
-\caption{Convergence with obstacle avoidance}
+\caption{Convergence with close obstacle avoidance}
 \begin{algorithmic}
   \ENSURE footbot converges towards the goal at speed \(SPEED\) while avoiding obstacles
   \WHILE{goal not reached}
@@ -119,35 +119,30 @@ Où $ 1 \leq dir \leq 12 $ est la direction de l'obstacle perçu le plus proche 
 
 Grâce à aux différentes routines élémentaires présentées ci-dessus, il est donc possible de construire une résoudre la partie déplacement du cahier des charges. L'implémentation détaillée de la routine d'évitement supplémentaire est donnée dans l'annexe \ref{app:implEvitClose}
 
+\subsection{Déplacement selon un chemin précalculé}
 
-
-même si on peut améliorer cette solution en fonction de la connaissance de son environnement dont dispose le robot.
-
-Ainsi, dans le cas omniscient ou si le robot est capable de construire une carte de son environnement reprenant la position des différents obstacles il peut-être judicieux d'utiliser un algorithme de recherche du plus court chemin. La manière la plus directe de faire est de donner au footbot une liste de goal successifs qui le mèneront au goal final. Ceci  permet de réutiliser facilement les algorithmes déjà présentés tout en étant parfaitement compatible avec les valeurs de retour typiques d'un algorithme de recherche du plus court chemin. En effet, la plupart des recherches du plus court chemin utilisent une représentation en graphe d'un environnement. La valeur de retour d'une telle recherche est donc une liste des nœuds qu'il faut parcourir dans le graphe afin d'arriver au but final, ce qui est précisément ce que cet algorithme fait.
+Il est cependant possible d'améliorer cette solution en fonction de la connaissance de son environnement dont dispose le robot. Ainsi, dans le cas omniscient ou si le robot est capable de construire une carte de son environnement reprenant la position des différents obstacles il peut-être judicieux d'utiliser un algorithme de recherche du plus court chemin. La manière la plus directe de faire est de donner au footbot une liste de goal successifs qui le mèneront au goal final. Ceci  permet de réutiliser facilement les algorithmes déjà présentés tout en étant parfaitement compatible avec les valeurs de retour typiques d'un algorithme de recherche du plus court chemin. En effet, la plupart des recherches du plus court chemin utilisent une représentation en graphe d'un environnement. La valeur de retour d'une telle recherche est donc une liste des nœuds qu'il faut parcourir dans le graphe afin d'arriver au but final, ce qui est précisément ce que cet algorithme fait.
 \begin{algorithm}                    
 \caption{Convergence with path finding}
 \label{pathConvergence}
-\begin{algorithmic}[1]
-  \REQUIRE \(SPEED :=\) Fixed speed of the footbot \(> 0\)\\intermediate goals list := list of points which lead to the goal while avoiding the obstacles\\goal in arena
-  \ENSURE footbot converges towards the goal at speed \(SPEED\) while avoiding obstacles
+\begin{algorithmic}
+  \REQUIRE intermediate goals list $\equiv$ list of points which lead to the goal while avoiding the obstacles
+  \ENSURE footbot goes to goal while avoiding obstacles
   \FOR{intermediate goal in intermediate goals list}
-  \WHILE{goal not reached}
+  \WHILE{intermediate goal not reached}
     \STATE update footbot position and orientation
     \STATE read proximity sensors \COMMENT{or whatever other sensor in use}
-    \IF{no obstacles}
-      \STATE \( \theta \leftarrow\) angle between the direction of the goal from the footbot and footbot orientation
-      \STATE \( right\:velocity \leftarrow\) convergence(\(\theta,\:SPEED\))
+    \IF{no obstacles too close}
+      \STATE do greedy avoidance
     \ELSE
-      \STATE \( right\:velocity \leftarrow\) avoidance(proximity sensor reading, \(SPEED\))
+      \STATE do close obstacle avoidance
     \ENDIF
-    \STATE \( left\:velocity \leftarrow 2\cdot SPEED-right\:velocity\) \COMMENT{so that overall speed stays equal to SPEED}
-    \STATE robot.wheels.set\_velocity(\(left\:velocity,\:right\:velocity\))
   \ENDWHILE
   \ENDFOR
 \end{algorithmic}
 \end{algorithm}
 
-L'implémentation de l'algorithme de recherche du plus court chemin qui fournit intermediate goals list est un problème à part entière. Avant de l'examiner plus en détail, il faut noter que malgré l'utilisation d'une recherche du plus court chemin qui devrait a priori permettre d'éviter les obstacles, le test d'obstacles est toujours présent, ainsi que la possibilité d'évitement. Il est évident que ceci est fait pour permettre d'éviter des objets inattendus tels que d'autres robots, par exemple. Cependant, on peut dès lors se demander s'il ne faudrait pas aussi chercher de nouveau un plus court chemin après un évitement imprévu ou si le robot a dévié d'une distance significative de sa trajectoire prévue.
+L'implémentation de l'algorithme de recherche du plus court chemin qui fournit intermediate goals list est un problème à part entière. Avant de l'examiner plus en détail, il faut noter que malgré l'utilisation d'une recherche du plus court chemin qui devrait a priori permettre d'éviter les obstacles, le test d'obstacle est toujours présent, ainsi que la possibilité d'évitement. Il est évident que ceci est fait pour permettre d'éviter des objets inattendus tels que d'autres robots, par exemple. Cependant, on peut dès lors se demander s'il ne faudrait pas aussi chercher de nouveau un plus court chemin après un évitement imprévu ou si le robot a dévié d'une distance significative de sa trajectoire prévue.
 
 \section{Recherche du plus court chemin}
 
