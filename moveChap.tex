@@ -43,7 +43,7 @@ A partir de cette loi des vitesses, il est aisé de construire un algorithme per
 \end{algorithmic}
 \end{algorithm}
 
-Où convergence(\(\theta\), SPEED) fixe la convergence du robot vers son goal. Elle doit satisfaire:
+Où convergence($\theta, SPEED$) fixe la convergence du robot vers son goal. Elle doit satisfaire:
 
 \begin{equation}
   \begin{cases}
@@ -53,7 +53,7 @@ Où convergence(\(\theta\), SPEED) fixe la convergence du robot vers son goal. E
   \end{cases}
 \end{equation}
 
-Pour une fonction convergence(\(\theta, SPEED\)) donnée satisfaisant à cette condition (par exemple dépendance linéaire en \(\theta\)), le footbot peut donc se rendre d'un point A à un point B, tant qu'il ne rencontre pas d'obstacles sur son trajet. Notons que cet algorithme s'intègre particulièrement bien dans la fonction \emph{step} demandée par ARGoS. Dans notre projet nous avons choisi
+Pour une fonction convergence($\theta, SPEED$) donnée satisfaisant à cette condition (par exemple dépendance linéaire en \(\theta\)), le footbot peut donc se rendre d'un point A à un point B, tant qu'il ne rencontre pas d'obstacles sur son trajet. Notons que cet algorithme s'intègre particulièrement bien dans la fonction \emph{step} demandée par ARGoS. Dans notre projet nous avons choisi
 \[
 convergence(\theta, SPEED)=
 \begin{cases}
@@ -86,39 +86,42 @@ Cet évitement d'obstacles est directement utilisé dans notre projet. Son impl�
 
 \subsection{Evitement d'obstacles proches}
 
-La manière la plus directe de permettre au robot d'éviter des obstacles quels qu'ils soient est d'exécuter une routine d'évitement à la place d'une routine de convergence lorsqu'un obstacle est détecté.
-\begin{algorithm}                    
-\caption{Convergence with obstacle avoidance}
+La manière la plus directe de permettre au footbot d'éviter des obstacles ou autres robots lorqu'ils sont dangereusement proches est d'alors exécuter une routine d'évitement à la place de la routine de convergence précédente.
+\begin{algorithm}
 \label{obstacleConvergence}
-\begin{algorithmic}[1]
-  \REQUIRE \(SPEED \equiv \) Fixed speed of the footbot \(> 0\)
-  \REQUIRE goal in arena
+\caption{Convergence with obstacle avoidance}
+\begin{algorithmic}
   \ENSURE footbot converges towards the goal at speed \(SPEED\) while avoiding obstacles
   \WHILE{goal not reached}
     \STATE update footbot position and orientation
     \STATE read proximity sensors \COMMENT{or whatever other sensor in use}
-    \IF{no obstacles}
-      \STATE calculate \( \theta \equiv\) angle between the direction of the goal from the footbot and footbot orientation
-      \STATE \( right\:velocity \leftarrow\) convergence(\(\theta,\:SPEED\))
+    \IF{no obstacles too close}
+      \STATE do previous convergence
     \ELSE
       \STATE \( right\:velocity \leftarrow\) avoidance(proximity sensor reading, \(SPEED\))
     \ENDIF
     \STATE \( left\:velocity \leftarrow 2 \times SPEED-right\:velocity\) \COMMENT{so that overall speed stays equal to SPEED}
-    \STATE robot.wheels.set\_velocity(\(left\:velocity,\:right\:velocity\))
   \ENDWHILE
 \end{algorithmic}
 \end{algorithm}
 
-Où avoidance(proximity sensor reading) fixe la routine d'évitement du robot. Son implémentation est très libre et peut fortement varier en fonction du capteur utilisé pour détecter les obstacles. On peut par exemple utiliser le senseur proximity du footbot, qui associe à 24 directions autour du robot une valeur entre zéro et un: une valeur zéro indique qu'aucun obstacle n'est perçu dans la direction donnée tandis qu'une valeur supérieure indique qu'un objet a été détecté. Cette valeur augmente au fur et à mesure que le robot se rapproche de l'obstacle.\cite{argosSite1} Dans notre projet nous avons choisi
+Où avoidance(proximity sensor reading, $SPEED$) fixe la routine d'évitement du robot. Son implémentation est très libre et peut fortement varier en fonction du capteur utilisé pour détecter les obstacles. On peut par exemple utiliser le senseur \emph{proximity} du footbot, qui associe à 24 directions autour du robot une valeur entre zéro et un: une valeur zéro indique qu'aucun obstacle n'est perçu dans la direction donnée tandis qu'une valeur supérieure indique qu'un objet a été détecté. Cette valeur augmente au fur et à mesure que le robot se rapproche de l'obstacle.~\cite{argosSite1}
+
+Dans notre projet nous avons choisi
 \[avoidance(dir, prox)=
   \begin{cases}
       \frac{-\alpha +(1-prox)^{\beta}\cdot dir}{11}SPEED & \text{si }dir \leq 12\\
       \frac{(22+\alpha )-(1-prox)^{\beta}\cdot (25-dir)}{11}SPEED & \text{si }dir \geq 12\\
   \end{cases}
 \]
+
 Où $ 1 \leq dir \leq 12 $ est la direction de l'obstacle perçu le plus proche et \hbox{$0 \leq prox \leq 1$} donne la proximité de cette obstacle. Comme présenté plus haut, ce sont les deux informations dont on dispose si l'on utilise le capteur de proximité.  \(1 \leq \alpha \leq 12 \) est un paramètre qui fixe l'influence de la direction de l'obstacle le plus proche et \(0 \leq \beta \) fixe l'influence de la proximité de cette obstacle. Cet évitement est partiellement tiré des exemples fourni sur le site du cours présentant ARGoS \cite{argosSite1}.
 
-Grâce à cette routine d'évitement, ainsi qu'en utilisant l'algorithme présenté plus haut, il est déjà possible de produire une solution fonctionnelle à la partie déplacement du cahier des charges, même si on peut améliorer cette solution en fonction de la connaissance de son environnement dont dispose le robot.
+Grâce à aux différentes routines élémentaires présentées ci-dessus, il est donc possible de construire une résoudre la partie déplacement du cahier des charges. L'implémentation détaillée de la routine d'évitement supplémentaire est donnée dans l'annexe \ref{app:implEvitClose}
+
+
+
+même si on peut améliorer cette solution en fonction de la connaissance de son environnement dont dispose le robot.
 
 Ainsi, dans le cas omniscient ou si le robot est capable de construire une carte de son environnement reprenant la position des différents obstacles il peut-être judicieux d'utiliser un algorithme de recherche du plus court chemin. La manière la plus directe de faire est de donner au footbot une liste de goal successifs qui le mèneront au goal final. Ceci  permet de réutiliser facilement les algorithmes déjà présentés tout en étant parfaitement compatible avec les valeurs de retour typiques d'un algorithme de recherche du plus court chemin. En effet, la plupart des recherches du plus court chemin utilisent une représentation en graphe d'un environnement. La valeur de retour d'une telle recherche est donc une liste des nœuds qu'il faut parcourir dans le graphe afin d'arriver au but final, ce qui est précisément ce que cet algorithme fait.
 \begin{algorithm}                    
@@ -281,9 +284,9 @@ function obstacleAvoidance(goalAngle, obstaclesTable)
   bestDistance = -1
   for angle, distance in pairs(obstaclesTable) do
     if distance>bestDistance
-    or (distance==bestDistance and not bestAngle)
-    or (distance==bestDistance
-    and abs(angle-goalAngle)<abs(bestAngle-goalAngle)) then
+       or (distance==bestDistance and not bestAngle)
+       or (distance==bestDistance
+         and abs(angle-goalAngle)<abs(bestAngle-goalAngle)) then
       bestDistance = distance
       bestAngle = angle
     end
@@ -303,8 +306,49 @@ function getToGoal(angle)
    robot.wheels.set_velocity(vLeft, vRight)
 end
   \end{lstlisting}
+  \subsection{Evitement d'obstacles proches \label{app:implEvitClose}}
+  \begin{lstlisting}[caption=Capteur supplémentaire]
+function step()
+  ...
+  emerProx, emerDir=readProxSensor()
+  if emerProx>0 then
+    emergencyAvoidance(emerProx, emerDir)
+  else
+  ...
+end    
+  \end{lstlisting}
+  \begin{lstlisting}[caption=lecture du \emph{proximity sensor}]
+function readProxSensor()
+  local emerDir = 1
+  local emerProx = robot.proximity[1].value
+  for i=2,24 do
+    if emerProx < robot.proximity[i].value
+       or (emerProx == robot.proximity[i].value
+           and abs(12-emerDir)<abs(12-i)) then
+      emerDir = i
+      emerProx = robot.proximity[i].value
+    end
+  end
+  return emerProx, emerDir
+end
+  \end{lstlisting}
 
-
-
+  \begin{lstlisting}[caption=Fonction emergencyAvoidance]
+function emergencyAvoidance(emerProx,emerDir)
+  local vLeft, vRight
+  if emerDir <= 12 then --Obstacle is to the left
+    vRight=((1-emerProx)^EMER_PROX_DEP*emerDir
+             -EMER_DIR_DEP)
+           *speed/11
+    vLeft=2*speed-vRight
+  else --Obstacle is to the right
+    vLeft=((1-emerProx)^EMER_PROX_DEP*(25-emerDir)
+            -EMER_DIR_DEP)
+          *speed/11
+    vRight=2*speed-vLeft
+  end
+  robot.wheels.set_velocity(vLeft, vRight)
+end    
+  \end{lstlisting}
 
 \end{subappendices}
