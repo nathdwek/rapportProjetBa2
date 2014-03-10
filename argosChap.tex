@@ -25,9 +25,9 @@ Au vu des raisons énoncées ci-dessus, Lua a été choisi comme langage de prog
 \section{Structure d'un comportement en Lua}
 
 Le \emph{template} de code fourni par ARGoS présenté plus bas montre les deux fonctions les plus importantes parmi celles exigées par ARGoS. La fonction \emph{init} qui est éxécutée une fois par chaque footbot au début de l'expérience, et la fonction \emph{step} qui est éxécutée par chaque footbot à chaque pas de la simulation. C'est bien évidemment cette fonction \emph{step} qui représente presqu'entièrement le comportement du robot. Deux types d'évènements peuvent modifier la façon dont cette fonction step s'éxécute: d'une part, les percepts ayant lieu au cours du pas de simulation, et d'autre part un ensemble de variables globales (qui survivent après l'éxécution de la fonction \emph{step} et sont donc accessibles par les instances suivante de cette fonction) qui détermine entièrement l'état du robot lorsque celui-ci entame ce pas de simulation. Enfin, la fonction step peut agir en retour sur ces variables d'état.~\cite{argosSite1}
-\begin{lstlisting}[language=Lua,frame=single, caption=Structure de base d'un comportement en Lua]
---[[ This function is executed every time you press 
-the 'execute' button ]]
+\begin{lstlisting}[caption=Structure de base d'un comportement en Lua]
+--[[ This function is executed every time
+     you press the 'execute' button ]]
 function init()
 
 end
