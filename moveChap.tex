@@ -2,13 +2,16 @@ Comme il a été présenté dans l'introduction sur l'intelligence artificielle,
 
 \section{Déplacement élémentaire}
 
+\subsection{Aspects physiques du déplacement}
+
 Tout d'abord, il est intéressant de se pencher sur le lien entre les paramètres physiques du robot et la manière dont celui-ci peut effectuer l'action simple «se rendre d'un point A à un point B» dans le cas où le robot agit seul dans un environnement sans obstacles. Ensuite, nous verrons comment le robot peut s’accommoder des obstacles (fixes, prévisibles) et autres robots (mobiles, imprévisibles) à partir d'une ou plusieurs de ces actions simples.
 
 \begin{wrapfigure}{r}{0.3\textwidth}
   \vspace{-3em}
   \begin{center}
-    \includegraphics[width=0.15\textwidth]{robotWheels.png}
+    \includegraphics[width=0.15\textwidth]{pics/robotWheels.png}
   \end{center}
+  \vspace{-2em}
   \caption{Signification physique de \(v_r,\: v_l,\: v_g \; et \; \omega_g \) \cite{argosSite1}}
   \vspace{-2em}
   \end{wrapfigure}
@@ -20,25 +23,28 @@ v_g=\frac{v_r+v_l}{2}\\
 \end{cases}  
 \end{equation}
 
+\subsection{Déplacement élémentaire sans obstacles}
+
 A partir de cette loi des vitesses, il est aisé de construire un algorithme permettant à un robot de converger vers sont but selon une trajectoire souple et à vitesse constante.
+
 \begin{algorithm}                    
 \caption{Convergence with no obstacle avoidance}
 \label{simpleConvergence}
-\begin{algorithmic}[1]
+\begin{algorithmic}
   \REQUIRE \(SPEED \equiv \) Fixed speed of the footbot \(> 0\)
   \REQUIRE Goal in arena
   \ENSURE footbot converges towards the goal at speed \(SPEED\)
   \WHILE{goal not reached}
     \STATE update footbot position and orientation
     \STATE calculate \( \theta \equiv\) angle between the direction of the goal from the footbot and footbot orientation
-    \STATE \( right\:velocity \leftarrow\) convergence(\(\theta,\:SPEED\))
-    \STATE \( left\:velocity \leftarrow 2 \times SPEED-right\:velocity\) \COMMENT{so that overall speed stays equal to SPEED}
-    \STATE robot.wheels.set\_velocity(\(left\:velocity,\:right\:velocity\))
+    \STATE \( right\:velocity \gets\) convergence(\(\theta,\:SPEED\))
+    \STATE \( left\:velocity \gets 2 \times SPEED-right\:velocity\) \COMMENT{so that overall speed stays equal to SPEED}
   \ENDWHILE
 \end{algorithmic}
 \end{algorithm}
 
 Où convergence(\(\theta\), SPEED) fixe la convergence du robot vers son goal. Elle doit satisfaire:
+
 \begin{equation}
   \begin{cases}
     convergence(0,SPEED)=SPEED\\
@@ -47,7 +53,7 @@ Où convergence(\(\theta\), SPEED) fixe la convergence du robot vers son goal. E
   \end{cases}
 \end{equation}
 
-Pour une fonction convergence(\(\theta, SPEED\)) donnée satisfaisant à cette condition (par exemple dépendance linéaire en \(\theta\)), le footbot peut donc se rendre d'un point A à un point B, tant qu'il ne rencontre pas d'obstacles sur son trajet. Notons que cet algorithme s'intègre particulièrement bien dans la fonction loop demandée par ARGoS. Dans notre projet nous avons choisi
+Pour une fonction convergence(\(\theta, SPEED\)) donnée satisfaisant à cette condition (par exemple dépendance linéaire en \(\theta\)), le footbot peut donc se rendre d'un point A à un point B, tant qu'il ne rencontre pas d'obstacles sur son trajet. Notons que cet algorithme s'intègre particulièrement bien dans la fonction \emph{step} demandée par ARGoS. Dans notre projet nous avons choisi
 \[
 convergence(\theta, SPEED)=
 \begin{cases}
@@ -56,6 +62,29 @@ convergence(\theta, SPEED)=
 \end{cases}
 \]
 Où $\kappa > 0$ est un paramètre qui fixe l'intensité de la convergence.
+
+\subsection{Évitement \emph{greedy} d'obstacles lointains}
+
+Une première manière de permettre au robot d'éviter des obstacles est d'activer le capteur \emph{distance scanner} longue distance qui permet de détecter des obstacles jusqu'à 150cm du footbot. Un évitement très efficace mais parfois trop gourmand consiste alors à chercher à chaque pas la direction la plus proche de la direction du goal et pour laquelle l'obstacle repéré est le plus éloigné du robot (ou non existant) et à converger vers celle-ci. Ceci permet au robot d'éviter plusieurs obstacles à la fois, tout en gardant une trajectoire très optimisée.
+
+\begin{algorithm}                    
+\caption{Convergence with greedy obstacle avoidance}
+\label{greedyConvergence}
+\begin{algorithmic}
+  \WHILE{goal not reached}
+    \STATE update footbot position and orientation
+    \STATE find \( \theta \equiv\) angle between footbot orientation and best direction (closest to goal, least obstacles)
+    \STATE \( right\:velocity \gets\) convergence(\(\theta,\:SPEED\))
+    \STATE \( left\:velocity \gets 2 \times SPEED-right\:velocity\) \COMMENT{so that overall speed stays equal to SPEED}
+  \ENDWHILE
+\end{algorithmic}
+\end{algorithm}
+
+La fonction convergence doit satisfaire au mêmes contraintes que précédemment et reste inchangée dans notre projet. Pour que l'évitement soit efficace, il faut que $\kappa$ soit assez élevé pour que le footbot s'oriente rapidement vers la direction optimale. Malgré cela, cet évitement reste très \emph{greedy}, dans le sens ou chercher absolument la direction la plus proche de celle du but peut mener à des collisions à cause de différents facteurs et approximations (footbot de taille non nulle, rayons du \emph{distance scanner} parfaitement tangent à un obstacle, \emph{distance scanner} ne faisant pas une mesure par direction à chaque pas, nombre de directions mesurées bien évidemment fini, \ldots). Une première manière de pallier à cela est de regrouper plusieurs mesures voisines en gardant systématiquement la mesure la moins optimiste. Magré cela, un évitement plus sûr d'obstacles proches est aussi nécessaire pour limiter le plus possible les collisions.
+
+Cet évitement d'obstacles est directement utilisé dans notre projet. Son implémentation est détaillée dans l'annexe \ref{app:implEvitGreedy}
+
+\subsection{Evitement d'obstacles proches}
 
 La manière la plus directe de permettre au robot d'éviter des obstacles quels qu'ils soient est d'exécuter une routine d'évitement à la place d'une routine de convergence lorsqu'un obstacle est détecté.
 \begin{algorithm}                    
@@ -130,7 +159,7 @@ Pour cela, il utilise une fonction de coût pour déterminer l'ordre dans lequel
 \begin{wrapfigure}{r}{0.3\textwidth}
   \vspace{-20pt}
   \begin{center}
-    \includegraphics[width=0.28\textwidth]{aStar.png}
+    \includegraphics[width=0.28\textwidth]{pics/aStar.png}
   \end{center}
   \caption{Représentation d'une éxécution de A*\cite{wikiA*}}
 \end{wrapfigure}
@@ -153,15 +182,15 @@ Voici 3 figures qui représentent un exemple du principe utilisé. Le but est de
 \begin{figure}[h!]
         \centering
         \begin{subfigure}[h!]{0.4\textwidth}
-                \includegraphics[width=\textwidth]{dijk1.png}
+                \includegraphics[width=\textwidth]{pics/dijk1.png}
                 \caption{Mise à jour initiale\\\(\;\)}
         \end{subfigure}   \begin{subfigure}[h!]{0.4\textwidth}
-                \includegraphics[width=\textwidth]{dijk2.png}
+                \includegraphics[width=\textwidth]{pics/dijk2.png}
                 \caption{Mise à jour et construction du sous-graphe}
         \end{subfigure}
 
         \begin{subfigure}[h!]{0.4\textwidth}
-                \includegraphics[width=\textwidth]{dijk3.png}
+                \includegraphics[width=\textwidth]{pics/dijk3.png}
                 \caption{Mise à jour et graphe final}
         \end{subfigure}
         \caption{\label{fig:dijkstra}Représentation d'une éxécution de Dijkstra \cite{wikiDijkstra}}
@@ -171,3 +200,111 @@ Voici 3 figures qui représentent un exemple du principe utilisé. Le but est de
 En effet, le sommet E est rajouté au sous graphe et non le sommet I car la distance à parcourir entre A et E est plus petite que entre A et I.
 
 Il faut souligner que cet algorithme possède le même inconvénient qu'A*.
+
+\begin{subappendices}
+  \appsec{Implémentation du déplacement en Lua}
+  \subsection{Evitement \emph{greedy}\label{app:implEvitGreedy}}
+  \begin{lstlisting}[caption=Initialisation]
+function init()
+  robot.distance_scanner.enable()
+  robot.distance_scanner.set_rpm(SCANNER_RPM)
+  obstaclesTable={}
+  for i=-PI+PI/DIR_NUMBER, PI-PI/DIR_NUMBER, 2*PI/DIR_NUMBER do
+    obstaclesTable[i]=151
+  end
+  goalX=SOURCEX
+  goalY=SOURCEY
+end
+  \end{lstlisting}
+  \begin{lstlisting}[caption=Structure générale]
+function step()
+  odometry()
+  obstaclesTable=updateObstaclesTable(obstaclesTable)
+  move(goalX,goalY,obstaclesTable)
+end
+  \end{lstlisting}
+  \begin{lstlisting}[caption=Rafraîchir la table des mesures à chaque pas]
+function updateObstaclesTable(tabl)
+   local sensor, reading, angle, value, rAngle, rDistance
+   for angle, value in pairs(tabl) do
+      newValue=false
+      for sensor, reading in pairs(robot
+                                   .distance_scanner
+                                   .long_range) do
+         rAngle = reading.angle
+         rDistance=reading.distance
+         if rDistance == -2 then rDistance=151 end
+         if rDistance == -1 then rDistance=0 end
+         if abs(angle-rAngle)<PI/DIR_NUMBER then
+            if value>rDistance or not newValue then
+               tabl[angle]=rDistance
+               newValue = true
+            end
+         end
+      end
+   end
+   return tabl
+end
+  \end{lstlisting}
+  \begin{lstlisting}[caption=Fonction move]
+function move(goalX,goalY,obstaclesTable)
+  local goalDirection=findGoalDirection(posX,posY,goalX,goalY)
+  local goalAngle=findGoalAngle(goalDirection, alpha)
+  obstacleAvoidance(goalAngle, obstaclesTable)
+end
+  \end{lstlisting}
+  \begin{lstlisting}[caption=Trouver la direction du goal vu du footbot]
+function findGoalDirection(posX, posY, goalX, goalY)
+  local deltaX=goalX-posX
+  local deltaY=goalY-posY
+  local goalDirection=math.atan(deltaY/deltaX)
+  if deltaX<0 then
+    goalDirection=goalDirection+PI
+  end
+  if goalDirection<0 then
+    goalDirection=goalDirection+2*PI
+  end
+  return goalDirection
+end
+
+function findGoalAngle(goalDirection,alpha)
+  local goalAngle=goalDirection-alpha
+  if goalAngle>PI then
+    goalAngle=goalAngle-2*PI
+  end
+  return goalAngle
+end  
+  \end{lstlisting}
+  \begin{lstlisting}[caption=Trouver la direction optimale et la suivre]
+function obstacleAvoidance(goalAngle, obstaclesTable)
+  local bestAngle, bestDistance, angle, distance
+  bestDistance = -1
+  for angle, distance in pairs(obstaclesTable) do
+    if distance>bestDistance
+    or (distance==bestDistance and not bestAngle)
+    or (distance==bestDistance
+    and abs(angle-goalAngle)<abs(bestAngle-goalAngle)) then
+      bestDistance = distance
+      bestAngle = angle
+    end
+  end
+  getToGoal(bestAngle)
+end
+  \end{lstlisting}
+  \begin{lstlisting}[caption=Fonction getToGoal]
+function getToGoal(angle)
+   if angle>=0 then --goal is to the left
+      vLeft=speed*((PI-angle)/PI)^CONVERGENCE
+      vRight = 2*speed-vLeft
+   else --goal is to the right
+      vRight=speed*((PI+angle)/PI)^CONVERGENCE
+      vLeft = 2*speed - vRight
+   end
+   robot.wheels.set_velocity(vLeft, vRight)
+end
+  \end{lstlisting}
+
+
+
+
+\end{subappendices}

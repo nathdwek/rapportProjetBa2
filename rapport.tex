@@ -20,7 +20,7 @@
 \usepackage[chapter]{algorithm}
 \usepackage{algorithmic}
 \algsetup{linenodelimiter=}
-\renewcommand{\algorithmiccomment}[1]{\##1}
+\renewcommand{\algorithmiccomment}[1]{-{}-#1}
 
 \usepackage{amsmath}
 
@@ -33,7 +33,7 @@
 \pagestyle{headings}
 
 \usepackage[title,titletoc]{appendix}
-\newcommand{\appsec}[1]{\newpage \section{#1}}
+\newcommand{\appsec}[1]{\clearpage \section{#1}}
 %syntax is:
 %\begin{subappendices}
 %  \appsec{appendix title}
