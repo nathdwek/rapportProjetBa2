@@ -13,9 +13,9 @@ Tout d'abord, il est intéressant de se pencher sur le lien entre les paramètre
   \end{center}
   \vspace{-2em}
   \caption{Signification physique de \(v_r,\: v_l,\: v_g \; et \; \omega_g \) \cite{argosSite1}}
-  \vspace{-2em}
+  \vspace{-1em}
   \end{wrapfigure}
-L'effecteur dont un footbot dispose afin de se déplacer est une paire de roues dont les vitesses peuvent être fixées de manière indépendante. A chaque instant, les seuls deux mouvements auxquels peut accéder le robot sont donc une translation parallèle aux roues et une rotation autour d'un point au milieu de l'axe des roues. La mécanique \cite{meca} nous indique que la composition de ces deux mouvements est suffisante pour permettre au robot de se déplacer librement dans un plan mais surtout, elle nous donne la relation entre les vitesses des deux roues et la vitesse générale ainsi que la vitesse de rotation du robot:
+L'effecteur dont un footbot dispose afin de se déplacer est une paire de roues dont les vitesses peuvent être fixées de manière indépendante. A chaque instant, les seuls deux mouvements auxquels peut accéder le robot sont donc une translation parallèle aux roues et une rotation autour d'un point au milieu de l'axe des roues. La mécanique~\cite{meca} nous indique que la composition de ces deux mouvements est suffisante pour permettre au robot de se déplacer librement dans un plan mais surtout, elle nous donne la relation entre les vitesses des deux roues et la vitesse générale ainsi que la vitesse de rotation du robot:
 \begin{equation}
 \begin{cases}
 v_g=\frac{v_r+v_l}{2}\\
@@ -146,7 +146,8 @@ L'implémentation de l'algorithme de recherche du plus court chemin qui fournit 
 
 \section{Recherche du plus court chemin}
 
-\subsection{Algorithme A* \cite{wikiA*}}
+\subsection{Algorithme A*}
+\cite{wikiA*}
 
 En informatique, A* est un algorithme informatique qui consiste à mettre en place un processus de traçage d'un chemin traversable efficace entre des points. Les points sont considérés comme des noeuds.
 
@@ -165,7 +166,8 @@ Cet algorithme possède quand même des limites. Il est effectivement efficace d
 
 A* détermine un chemin complet de nœuds pour arriver d'un noeud départ à un noeud but. Lorsqu'il ne possède pas de données complètes à propos de l'arène, il est bloqué lors de son exécution et ne peut donc pas déterminer le chemin que doit suivre le robot. Il faudra adapter l'algorithme A* afin de remédier à ce problème.
 
-\subsection{Algoritme de Dijkstra \cite{wikiDijkstra}}
+\subsection{Algoritme de Dijkstra}
+\cite{wikiDijkstra}
 
 L’algorithme de Dijkstra est un algorithme servant à résoudre le problème du plus court chemin. Le principe de l'algorithme est le suivant:
 
