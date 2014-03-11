@@ -84,7 +84,7 @@ La fonction convergence doit satisfaire au mêmes contraintes que précédemment
 
 Cet évitement d'obstacles est directement utilisé dans notre projet. Son implémentation est détaillée dans l'annexe \ref{app:implEvitGreedy}
 
-\subsection{Evitement d'obstacles proches}
+\subsection{Evitement sûr d'obstacles proches}
 
 La manière la plus directe de permettre au footbot d'éviter des obstacles ou autres robots lorqu'ils sont dangereusement proches est d'alors exécuter une routine d'évitement à la place de la routine de convergence précédente.
 \begin{algorithm}
@@ -117,7 +117,13 @@ Dans notre projet nous avons choisi
 
 Où $ 1 \leq dir \leq 12 $ est la direction de l'obstacle perçu le plus proche et \hbox{$0 \leq prox \leq 1$} donne la proximité de cette obstacle. Comme présenté plus haut, ce sont les deux informations dont on dispose si l'on utilise le capteur de proximité.  \(1 \leq \alpha \leq 12 \) est un paramètre qui fixe l'influence de la direction de l'obstacle le plus proche et \(0 \leq \beta \) fixe l'influence de la proximité de cette obstacle. Cet évitement est partiellement tiré des exemples fourni sur le site du cours présentant ARGoS \cite{argosSite1}.
 
-Grâce à aux différentes routines élémentaires présentées ci-dessus, il est donc possible de construire une résoudre la partie déplacement du cahier des charges. L'implémentation détaillée de la routine d'évitement supplémentaire est donnée dans l'annexe \ref{app:implEvitClose}
+\subsection{Evitement intermédiaire}
+
+Additionnellement, il est possible d'utiliser le capteur \emph{short range} du \emph{distance scanner} pour que le robot puisse déjà commencer à dévier sa trajectoire s'il détecte des obstacles proche de moins de 30cm~\cite{argosSite1}. Ceci permet de déclencher plus tôt le même évitement aux constantes numériques près (évitement moins brusque) que ci-dessus. Cet évitement est beaucoup moins \emph{greedy} que le premier évitement présenté, tout en étant forcément plus souple que l'évitement <<d'urgence>> (cf \ref{sec:stepFunction}) précédent.
+
+De plus, les capteurs \emph{short range} et \emph{long range} sont des capteurs rotatifs, ce qui signifie qu'il n'est pas possible de prendre des mesures tout autour du robot à chaque pas\footnote{D'où la nécessité de rafraîchir les tables de mesures de la manière qui est faite au listing \ref{lst:updateObstaclesTable}}. Les deux capteurs étant orientés perpendiculairement, il est donc avantageux de les utiliser tous les deux afin de ne pas avoir de direction pour laquelle la dernière mesure est <<trop vieille>>
+
+Grâce à aux différentes routines élémentaires présentées ci-dessus, il est donc possible de construire une résoudre la partie déplacement du cahier des charges. L'implémentation détaillée des routines d'évitement supplémentaire est donnée dans l'annexe~\ref{app:implEvitClose}
 
 \subsection{Déplacement selon un chemin précalculé}
 
@@ -223,27 +229,31 @@ function step()
   move(goalX,goalY,obstaclesTable)
 end
   \end{lstlisting}
-  \begin{lstlisting}[caption=Rafraîchir la table des mesures à chaque pas]
-function updateObstaclesTable(tabl)
-   local sensor, reading, angle, value, rAngle, rDistance
-   for angle, value in pairs(tabl) do
-      newValue=false
-      for sensor, reading in pairs(robot
-                                   .distance_scanner
-                                   .long_range) do
-         rAngle = reading.angle
-         rDistance=reading.distance
-         if rDistance == -2 then rDistance=151 end
-         if rDistance == -1 then rDistance=0 end
-         if abs(angle-rAngle)<PI/DIR_NUMBER then
-            if value>rDistance or not newValue then
-               tabl[angle]=rDistance
-               newValue = true
-            end
-         end
+  \begin{lstlisting}[caption=Rafraîchir la table des mesures à chaque pas, label=lst:updateObstaclesTable]
+function updateObstaclesTable(tabl, which) 
+  --tabl: the obstacleTable to refresh
+  --(obstaclesTable or shortObstaclesTable)
+  --which (string): which sensor to use
+  --("short_range" or "long_range")
+  local sensor, reading, angle, value, rAngle, rDistance
+  for angle, value in pairs(tabl) do
+    newValue=false
+    for sensor, reading in pairs(robot
+                                 .distance_scanner
+                                 [which]) do
+      rAngle = reading.angle
+      rDistance=reading.distance
+      if rDistance == -2 then rDistance=151 end
+      if rDistance == -1 then rDistance=0 end
+      if abs(angle-rAngle)<PI/DIR_NUMBER then
+        if value>rDistance or not newValue then
+          tabl[angle]=rDistance
+          newValue = true
+        end
       end
-   end
-   return tabl
+    end
+  end
+  return tabl
 end
   \end{lstlisting}
   \begin{lstlisting}[caption=Fonction move]

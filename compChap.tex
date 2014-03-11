@@ -1,3 +1,37 @@
+\section{Structure générale \label{sec:stepFunction}}
+
+Après s'être initialisé, chaque footbot éxécute a chaque pas une séquence d'opérations communes à tous les états possibles, suivie d'une séquence s'opérations propre à l'état courant.
+\begin{lstlisting}[caption=Fonction step]
+function step()
+  local obstacleProximity, obstacleDirection, onSource,
+        foundSource, backHome, gotSource,
+        emerProx, emerDir
+  obstacleProximity, obstacleDirection, onSource,
+  foundSource, backHome, gotSource,
+  emerProx, emerDir = doCommon()
+  if emerProx>0 then
+    emergencyAvoidance(emerProx, emerDir)
+  elseif explore then
+    doExplore(obstacleProximity, obstacleDirection,
+              foundSource, gotSource)
+  else
+    doMine(obstacleProximity, obstacleDirection,
+           onSource, backHome, foundSource)
+  end
+end
+\end{lstlisting}
+
+\subsection{Opérations Communes}
+
+La fonction doCommon regroupe trois opérations:
+
+
+
+\section{Exploration}
+
+
+
+
 \section{Gestion de l'autonomie}
 Une condition sur l'autonomie des robots a été imposée: l'autonomie est fixée dans le temps, ce qui signifie que leur batterie se décharge de manière constante à chaque pas d'ARGoS. Une valeur chiffrée n'a pas été imposée, mais les robots doivent juste être capables d'effectuer un aller-retour vers un point le plus éloigné de leur nid de départ à leur vitesse de régime. Une fois la batterie écoulée, le robot est rendu incapable de se déplacer mais pourra peut-être être dépanné par un autre membre de l'essaim dans le futur.
 
