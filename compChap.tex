@@ -1,5 +1,3 @@
-\section{Structure générale \label{sec:stepFunction}}
-
 Après s'être initialisé, chaque footbot éxécute a chaque pas une séquence d'opérations communes à tous les états possibles, suivie d'une séquence s'opérations propre à l'état courant.
 \begin{lstlisting}[caption=Fonction step]
 function step()
@@ -21,7 +19,7 @@ function step()
 end
 \end{lstlisting}
 
-\subsection{Opérations Communes}
+\section{Opérations Communes}
 
 Les opérations communes à tous les états sont
 \begin{itemize}
@@ -30,12 +28,49 @@ Les opérations communes à tous les états sont
   \item Lecture du capteur \emph{distance scanner (short range)} parce qu'il est utilisé en pratique quel que soit l'état du robot.
 \end{itemize}
 
+A part pour l'évitement d'urgence, toutes les décisions sont donc uniquement prises par les fonctions \emph{doMine} et \emph{doExplore}. La fonction \emph{doCommon} se contente de leur envoyer des signaux sous la forme des diverses variables renvoyées \emph{onSource, backHome,\ldots}.
+
 L'implémentation détaillée de la fonction doCommon est donnée dans l'annexe \ref{appsec:doCommon}. L'évitement d'urgence est celui présenté dans la section \ref{sec:emerAvoid}, tandis que pour retourner le plus rapidement possible au nid, le footbot utilise simplement le déplacement présenté au chapitre \ref{chap:move} avec pour goal le centre du nid.
 
-\section{Exploration}
+\section{Exploration\label{sec:explore}}
 
+Tous les robots sont initialisés dans l'état \emph{explore}. Dans cet état, ils se déplacent selon une méthode d'exploration donnée jusqu'à recevoir le signal \emph{foundSource} ou \emph{gotSource}. Le premier signal signifie que le footbot a lui-même trouvé une nouvelle source, tandis que le second signal indique qu'une nouvelle source lui a été transmise. C'est la fonction \emph{doCommon} qui s'assure qu'une source potentielle est effectivement originale et la stocke alors dans la liste des sources connues. Cette liste est partagée avec les autres robots (voir section \ref{sec:commu}) et utilisée lorsque le robot est dans l'état \emph{exploite}.
 
+Dans le cas où le robot a trouvé une source, il passe directement dans l'état exploite. Par contre, dans le cas où le robot reçu une nouvelle source, il décide aléatoirement s'il continue à explorer ou s'il se met à exploiter la ou les ressources qu'il connaît. La communication entre robot étant relativement efficace, ceci permet d'éviter que tous les robots se contentent d'une unique source dès qu'un seul individu en a fait la découverte. Une amélioration possible serait de permettre au robot de passer de l'état \emph{explore} à l'état \emph{exploite} même en l'absence de découverte originale s'il estime avoir déjà passé trop de temps à explorer.
 
+Le parcours d'exploration pris par le robot est une composante importante et complexe de l'efficacité de la phase d'exploration. Malheureusement, par manque de temps, nous avons dû nous limiter à un simple modèle de diffusion: les robots se déplacent en ligne droite et rebondissent sur tous les obstacles qu'ils rencontrent à la manière de simples particules. Ceci permet d'assurer que les robots migrent des zones les plus concentrées en footbots vers les zones les moins concentrées et que, plus globalement, les robots occupent tout l'espace disponible.
+
+Ce modèle est assez satisfaisant en théorie et en pratique mais n'est pas tout à fait adapté pour plusieurs raisons. Tout d'abord, la gestion de l'autonomie entraîne bien évidemment des retours fréquents des robots vers le nid, ce qui annule en partie l'effet désiré d'homogénéiser la concentration de robots. Ceci devrait être mieux pris en compte. D'autre part, ce modèle permet d'éviter relativement bien l'exploration d'une même zone par un nombre élevé de robots, mais ne permet pas de réellement privilégier d'éventuelles <<zones d'ombres>> qui n'ont encore jamais été explorées. Cependant, le principal facteur limitant semble bien être la portée extrèmement limitée des capteurs de couleur de sol.
+
+L'implémentation du modèle de diffusion est détaillée en annexe \ref{appsec:gasLike}
+
+\section{Exploitation}
+
+Une fois passé dans l'état \emph{exploite}, le footbot fait simplement des allers-retours entre une des ressources connues et le nid en suivant le modèle de déplacement présenté au chapitre \ref{chap:move}. Les opérations communes ont toujours lieu et le footbot continue donc à communiquer avec les autres robots et à lire la couleur du sol. Il reste donc à traiter du choix de la source à exploiter.
+
+A chaque fois qu'il est de retour au nid, le robot effectue ce choix avant de repartir exploiter une source. Pour ce faire, un indice de qualité est associé à chaque source connue. Le score d'une ressource influe sur la probabilité qu'a le robot de la choisir et cet indice est réévalué à chaque fois que le robot atteint la source en utilisant le pourcentage de batterie restant à ce moment (qui est directement lié au temps qu'à mis le robot à atteindre la source).
+
+\begin{lstlisting}[caption=Choix de la ressource à exploiter]
+function chooseNewSource(rscList)
+  local sourceChosen=false
+  local pickSource
+  while not sourceChosen do
+    pickSource=robot.random.uniform_int(1,#rscList+1)
+    sourceChosen=robot.random.uniform()<rscList[pickSource].score
+  end
+  local x=rscList[pickSource][1]
+  local y=rscList[pickSource][2]
+  return pickSource,x,y
+  --return ressource index as well to make
+  --ressource evaluation easier later
+end
+\end{lstlisting}
+
+Cette implémentation permettrait en plus très facilement au robot de recommencer à explorer l'arène si les sources disponibles sont estimées peu rentables. En effet, il suffit d'ajouter un compteur à la boucle while et de repasser dans l'état \emph{explore} si cette ce compteur est atteint sans qu'une source ait été choisie. Cependant, il faudrait alors aussi permettre au footbot de changer d'état dans l'autre sens à d'autres occasions que seulement s'il trouve ou reçoit une nouvelle source, comme il a été évoqué dans la section \ref{sec:explore}.
+
+Les autres fonctions nécessaires à l'évaluation et au choix des ressources sont présentées dans l'annexe \ref{appsec:evalSource}
+
+\section{Communication\label{sec:commu}}
 
 \section{Gestion de l'autonomie}
 Une condition sur l'autonomie des robots a été imposée: l'autonomie est fixée dans le temps, ce qui signifie que leur batterie se décharge de manière constante à chaque pas d'ARGoS. Une valeur chiffrée n'a pas été imposée, mais les robots doivent juste être capables d'effectuer un aller-retour vers un point le plus éloigné de leur nid de départ à leur vitesse de régime. Une fois la batterie écoulée, le robot est rendu incapable de se déplacer mais pourra peut-être être dépanné par un autre membre de l'essaim dans le futur.
@@ -62,13 +97,16 @@ Où evaluate cost(position, goal, [battery]) est la fonction qui évalue l'éner
 En vue de la prochaine étape (la non omniscience des robots), le choix d'implémentation de la batterie autorise des sacrifices, c'est à dire, si un robot, étant à une position, estime devoir aller à une autre position et si sa batterie le lui permet, il ira à cette nouvelle position, sans toutefois vérifier qu'en y allant il pourra rentrer à la base recharger sa batterie. Ce choix favorise l'exploration de l'arène en mettant en avant la réussite de l'ensemble du groupe et non la réussite personnelle, pouvant être interprété comme la recharge de la batterie. Cependant des modifications doivent encore être apportées car nous ne pouvons nous permettre de sacrifier l'ensemble des robots, faute de quoi l'objectif ne sera pas atteint.
 
 \begin{subappendices}
-  \appsec{Implémentation de doCommon \label{appsec:doCommon}}
+  \appsec{Opérations communes\label{appsec:doCommon}}
+  \subsection{Appels faits par \emph{doCommon}}
+
+  L'implémentation des fonctions appelées est donnée dans les sections traitant de ce que font ces fonctions (fonction \emph{listen} $\Rightarrow$ communication, \ldots) à l'exception de \emph{checkGoalReached}, qui détecte de nouvelles sources et qui est présentée ci-dessous.
 \begin{lstlisting}[caption=fonction doCommon]
 function doCommon()
   local obstacleProximity, obstacleDirection,
         onSource, foundSource, backHome, gotSource,
         emerProx, emerDir
-  
+
   odometry()
   onSource, foundSource, backHome = checkGoalReached()
   gotSource = listen()
@@ -98,8 +136,124 @@ function doCommon()
 end
 \end{lstlisting}
 
-\begin{lstlisting}[]
+\subsection{Détection de nouvelle sources et du nid}
 
+\begin{lstlisting}[caption=fonction checkGoalReached]
+function checkGoalReached()
+  local foundSource, onSource, backHome=false,false,false
+  if floorIsBlack() and math.sqrt((posX)^2+(posY)^2)>=90 then
+    if sourceIsOriginal(posX,posY, ressources) then
+      ressources[#ressources+1]={posX,posY,score=.5}
+      foundSource=true
+    end
+    onSource=true
+  elseif floorIsBlack() and math.sqrt((posX)^2+(posY)^2)<=70 then
+    if goalX==0 and goalY==0 then
+      backHome=true
+    end
+    if backForBattery then
+      batterySecurity=updateBattCoeff(battery,batterySecurity)
+      backForBattery=false
+    end
+    battery=100
+  end
+  return onSource, foundSource, backHome
+end
 \end{lstlisting}
+
+\begin{lstlisting}[caption=Vérifier l'originalité de la source]
+function sourceIsOriginal(x, y, rsc)
+  local i=1
+  local orgn=true
+  while i<=#ressources and orgn do
+    orgn=(math.sqrt((rsc[i][1]-x)^2 + (rsc[i][2]-y)^2)>ORGN_SRC_DST)
+    --just check if it's far enough from sources you already know
+    i=i+1
+  end
+  return orgn
+end
+\end{lstlisting}
+
+\appsec{Implémentation du modèle de diffusion\label{appsec:gasLike}}
+
+\begin{lstlisting}[caption=Déplacement \emph{gaslike}]
+function gasLike(obstacleProximity, obstacleDirection)
+  local goalAngle
+  if obstacleProximity < 30
+     and not(obstacleDirection<-PI/2 or obstacleDirection>PI/2)
+     and not wasHit then
+    wasHit = true --/!\Not local: allows footbot to remember
+                  --if it's already trying to reach an angle
+    newDirection = alpha+rebound(alpha,obstacleDirection)
+    newDirection=setCoupure(newDirection)   --sets angle in [-PI,PI]
+  end
+  if wasHit then
+    if abs(alpha-newDirection)<0.2 then --checks if angle is reached
+      wasHit=false
+    else
+      goalAngle=newDirection-alpha
+      goalAngle=setCoupure(goalAngle) --sets angle in [-PI,PI]
+      getToGoal(goalAngle, EXPL_CONV)
+      --EXPL_CONV is really high because we want to do sharp turns
+    end
+  else
+    robot.wheels.set_velocity(BASE_SPEED,BASE_SPEED)
+  end
+end
+
+function rebound(alpha, obstacleDirection)
+  if obstacleDirection<=12 then   --obstacle is to the left
+    newAngle = -2*(PI/2-obstacleDirection)
+  else
+    newAngle = 2*(PI/2-obstacleDirection)
+  end
+  newAngle=setCoupure(newAngle) --sets angle in [-PI,PI]
+  return newAngle
+end
+\end{lstlisting}
+
+\appsec{Implémentation du choix de ressource à exploiter\label{appsec:evalSource}}
+
+\begin{lstlisting}[caption=fonction doMine]
+function doMine(obstacleProximity, obstacleDirection,
+                onSource, backHome, foundSource)
+  if onSource then
+    if goalX~=0 and goalY~=0 then
+    --if we don't check for this then
+    --we reevaluate at every step we're on the source
+      evalSource(sourceId, battery)
+    end
+    goalX=0
+    goalY=0
+  elseif backHome then
+    sourceId,goalX,goalY=chooseNewSource(ressources)
+    travels=travels+1
+  end
+  if backForBattery then
+    move(obstaclesTable, obstacleProximity, obstacleDirection,0,0)
+  else
+    obstaclesTable = updateObstaclesTable("long_range",obstaclesTable)
+    move(obstaclesTable, obstacleProximity, obstacleDirection,goalX,goalY)
+  end
+end
+\end{lstlisting}
+
+\begin{lstlisting}[caption=Evaluation de la qualité de la source]
+function evalSource(sourceId, battery)
+  if battery>70 then
+    ressources[sourceId].score=ressources[sourceId].score
+                                +(1-ressources[sourceId].score)
+                                  *battery/100
+    --Ensures score<1
+  else
+    ressources[sourceId].score=ressources[sourceId].score
+                                -ressources[sourceId].score
+                                  *(100-battery)/100
+    --Ensures score>0
+  end
+end
+\end{lstlisting}
+
+
 
 \end{subappendices}

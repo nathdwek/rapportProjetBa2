@@ -1,8 +1,6 @@
 Comme il a été présenté dans l'introduction sur l'intelligence artificielle, et vu en pratique dans la structure de base d'un comportement Lua interprétable par ARGoS, un footbot exécute à chaque step une séquence d'opérations. On peut distinguer dans cette séquence trois types d'opérations (cf chapitre \ref{chap:AI}): l'écoute des capteurs, la prise de décision et les interactions sur l'environnement par l'intermédiaire des effecteurs, que l'on nommera ici simplement sous le nom d'actions. Ces actions sont donc limitées et déterminées par les effecteurs dont dispose le robot et qui sont décrits au chapitre \ref{chap:argosFootbot}. Dans ce chapitre-ci, l'un des effecteurs primordiaux d'un footbot sera examiné: son déplacement.
 
-\section{Déplacement élémentaire}
-
-\subsection{Aspects physiques du déplacement}
+\section{Aspects physiques du déplacement}
 
 Tout d'abord, il est intéressant de se pencher sur le lien entre les paramètres physiques du robot et la manière dont celui-ci peut effectuer l'action simple «se rendre d'un point A à un point B» dans le cas où le robot agit seul dans un environnement sans obstacles. Ensuite, nous verrons comment le robot peut s’accommoder des obstacles (fixes, prévisibles) et autres robots (mobiles, imprévisibles) à partir d'une ou plusieurs de ces actions simples.
 
@@ -23,7 +21,7 @@ v_g=\frac{v_r+v_l}{2}\\
 \end{cases}  
 \end{equation}
 
-\subsection{Déplacement élémentaire sans obstacles}
+\section{Déplacement sans obstacles}
 
 A partir de cette loi des vitesses, il est aisé de construire un algorithme permettant à un robot de converger vers sont but selon une trajectoire souple et à vitesse constante.
 
@@ -63,7 +61,7 @@ convergence(\theta, SPEED)=
 \]
 Où $\kappa > 0$ est un paramètre qui fixe l'intensité de la convergence.
 
-\subsection{Évitement \emph{greedy} d'obstacles lointains}
+\section{Évitement \emph{greedy} d'obstacles lointains}
 
 Une première manière de permettre au robot d'éviter des obstacles est d'activer le capteur \emph{distance scanner} longue distance qui permet de détecter des obstacles jusqu'à 150cm du footbot. Un évitement très efficace mais parfois trop gourmand consiste alors à chercher à chaque pas la direction la plus proche de la direction du goal et pour laquelle l'obstacle repéré est le plus éloigné du robot (ou non existant) et à converger vers celle-ci. Ceci permet au robot d'éviter plusieurs obstacles à la fois, tout en gardant une trajectoire très optimisée.
 
@@ -84,7 +82,7 @@ La fonction convergence doit satisfaire au mêmes contraintes que précédemment
 
 Cet évitement d'obstacles est directement utilisé dans notre projet. Son implémentation est détaillée dans l'annexe \ref{app:implEvitGreedy}
 
-\subsection{Evitement sûr d'obstacles proches\label{sec:emerAvoid}}
+\section{Evitement sûr d'obstacles proches\label{sec:emerAvoid}}
 
 La manière la plus directe de permettre au footbot d'éviter des obstacles ou autres robots lorqu'ils sont dangereusement proches est d'alors exécuter une routine d'évitement à la place de la routine de convergence précédente.
 \begin{algorithm}
@@ -105,7 +103,7 @@ La manière la plus directe de permettre au footbot d'éviter des obstacles ou a
 \end{algorithmic}
 \end{algorithm}
 
-Où avoidance(proximity sensor reading, $SPEED$) fixe la routine d'évitement du robot. Son implémentation est très libre et peut fortement varier en fonction du capteur utilisé pour détecter les obstacles. On peut par exemple utiliser le senseur \emph{proximity} du footbot, qui associe à 24 directions autour du robot une valeur entre zéro et un: une valeur zéro indique qu'aucun obstacle n'est perçu dans la direction donnée tandis qu'une valeur supérieure indique qu'un objet a été détecté. Cette valeur augmente au fur et à mesure que le robot se rapproche de l'obstacle.~\cite{argosSite1}
+Où avoidance(proximity sensor reading, $SPEED$) fixe la routine d'évitement du robot. Son implémentation est très libre et peut fortement varier en fonction du capteur utilisé pour détecter les obstacles. On peut par exemple utiliser le senseur \emph{proximity} du footbot, qui associe à 24 directions autour du robot une valeur entre zéro et un: une valeur zéro indique qu'aucun obstacle n'est perçu à moins de 10cm dans la direction donnée tandis qu'une valeur supérieure indique qu'un objet a été détecté. Cette valeur augmente au fur et à mesure que le robot se rapproche de l'obstacle.~\cite{argosSite1}
 
 Dans notre projet nous avons choisi
 \[avoidance(dir, prox)=
@@ -117,18 +115,18 @@ Dans notre projet nous avons choisi
 
 Où $ 1 \leq dir \leq 12 $ est la direction de l'obstacle perçu le plus proche et \hbox{$0 \leq prox \leq 1$} donne la proximité de cette obstacle. Comme présenté plus haut, ce sont les deux informations dont on dispose si l'on utilise le capteur de proximité.  \(1 \leq \alpha \leq 12 \) est un paramètre qui fixe l'influence de la direction de l'obstacle le plus proche et \(0 \leq \beta \) fixe l'influence de la proximité de cette obstacle. Cet évitement est partiellement tiré des exemples fourni sur le site du cours présentant ARGoS \cite{argosSite1}.
 
-\subsection{Evitement intermédiaire}
+\section{Evitement intermédiaire}
 
-Additionnellement, il est possible d'utiliser le capteur \emph{short range} du \emph{distance scanner} pour que le robot puisse déjà commencer à dévier sa trajectoire s'il détecte des obstacles proche de moins de 30cm~\cite{argosSite1}. Ceci permet de déclencher plus tôt le même évitement aux constantes numériques près (évitement moins brusque) que ci-dessus. Cet évitement est beaucoup moins \emph{greedy} que le premier évitement présenté, tout en étant forcément plus souple que l'évitement <<d'urgence>> (cf \ref{sec:stepFunction}) précédent.
+Additionnellement, il est possible d'utiliser le capteur \emph{short range} du \emph{distance scanner} pour que le robot puisse déjà commencer à dévier sa trajectoire s'il détecte des obstacles proche de moins de 30cm~\cite{argosSite1}. Ceci permet de déclencher plus tôt le même évitement aux constantes numériques près (évitement moins brusque) que ci-dessus. Cet évitement est beaucoup moins \emph{greedy} que le premier évitement présenté, tout en étant forcément plus souple que l'évitement <<d'urgence>> précédent.
 
 De plus, les capteurs \emph{short range} et \emph{long range} sont des capteurs rotatifs, ce qui signifie que la table des mesures n'est pas complètement renouvelée à chaque pas\footnote{D'où la nécessité de rafraîchir les tables de mesures de la manière qui est faite au listing \ref{lst:updateObstaclesTable}}. Les deux capteurs étant orientés perpendiculairement, il est donc avantageux de les utiliser tous les deux afin de ne pas avoir de direction pour laquelle la dernière mesure est <<trop vieille>>.
 
 Grâce à aux différentes routines élémentaires présentées ci-dessus, il est donc possible de construire une résoudre la partie déplacement du cahier des charges. L'implémentation détaillée des routines d'évitement supplémentaire est donnée dans l'annexe~\ref{app:implEvitClose}
 
-\subsection{Déplacement selon un chemin précalculé}
+\section{Déplacement selon un chemin précalculé}
 
 Il est cependant possible d'améliorer cette solution en fonction de la connaissance de son environnement dont dispose le robot. Ainsi, dans le cas omniscient ou si le robot est capable de construire une carte de son environnement reprenant la position des différents obstacles il peut-être judicieux d'utiliser un algorithme de recherche du plus court chemin. La manière la plus directe de faire est de donner au footbot une liste de goal successifs qui le mèneront au goal final. Ceci  permet de réutiliser facilement les algorithmes déjà présentés tout en étant parfaitement compatible avec les valeurs de retour typiques d'un algorithme de recherche du plus court chemin. En effet, la plupart des recherches du plus court chemin utilisent une représentation en graphe d'un environnement. La valeur de retour d'une telle recherche est donc une liste des nœuds qu'il faut parcourir dans le graphe afin d'arriver au but final, ce qui est précisément ce que cet algorithme fait.
-\begin{algorithm}                    
+\begin{algorithm}
 \caption{Convergence with path finding}
 \label{pathConvergence}
 \begin{algorithmic}
@@ -150,9 +148,9 @@ Il est cependant possible d'améliorer cette solution en fonction de la connaiss
 
 L'implémentation de l'algorithme de recherche du plus court chemin qui fournit intermediate goals list est un problème à part entière. Avant de l'examiner plus en détail, il faut noter que malgré l'utilisation d'une recherche du plus court chemin qui devrait a priori permettre d'éviter les obstacles, le test d'obstacle est toujours présent, ainsi que la possibilité d'évitement. Il est évident que ceci est fait pour permettre d'éviter des objets inattendus tels que d'autres robots, par exemple. Cependant, on peut dès lors se demander s'il ne faudrait pas aussi chercher de nouveau un plus court chemin après un évitement imprévu ou si le robot a dévié d'une distance significative de sa trajectoire prévue.
 
-\section{Recherche du plus court chemin}
+\subsection{Recherche du plus court chemin}
 
-\subsection{Algorithme A*}
+\subsubsection{Algorithme A*}
 \cite{wikiA*}
 
 En informatique, A* est un algorithme informatique qui consiste à mettre en place un processus de traçage d'un chemin traversable efficace entre des points. Les points sont considérés comme des noeuds.
@@ -172,7 +170,7 @@ Cet algorithme possède quand même des limites. Il est effectivement efficace d
 
 A* détermine un chemin complet de nœuds pour arriver d'un noeud départ à un noeud but. Lorsqu'il ne possède pas de données complètes à propos de l'arène, il est bloqué lors de son exécution et ne peut donc pas déterminer le chemin que doit suivre le robot. Il faudra adapter l'algorithme A* afin de remédier à ce problème.
 
-\subsection{Algoritme de Dijkstra}
+\subsubsection{Algoritme de Dijkstra}
 \cite{wikiDijkstra}
 
 L’algorithme de Dijkstra est un algorithme servant à résoudre le problème du plus court chemin. Le principe de l'algorithme est le suivant:
@@ -298,16 +296,16 @@ function obstacleAvoidance(goalAngle, obstaclesTable)
       bestAngle = angle
     end
   end
-  getToGoal(bestAngle)
+  getToGoal(bestAngle, CONVERGENCE)
 end
   \end{lstlisting}
   \begin{lstlisting}[caption=Fonction getToGoal]
-function getToGoal(angle)
+function getToGoal(angle, conv)
    if angle>=0 then --goal is to the left
-      vLeft=speed*((PI-angle)/PI)^CONVERGENCE
+      vLeft=speed*((PI-angle)/PI)^conv
       vRight = 2*speed-vLeft
    else --goal is to the right
-      vRight=speed*((PI+angle)/PI)^CONVERGENCE
+      vRight=speed*((PI+angle)/PI)^conv
       vLeft = 2*speed - vRight
    end
    robot.wheels.set_velocity(vLeft, vRight)
