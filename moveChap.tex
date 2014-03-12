@@ -18,14 +18,14 @@ L'effecteur dont un footbot dispose afin de se déplacer est une paire de roues 
 \begin{cases}
 v_g=\frac{v_r+v_l}{2}\\
 \omega_g=\frac{v_r-v_l}{l_{axe}}
-\end{cases}  
+\end{cases}
 \end{equation}
 
 \section{Déplacement sans obstacles}
 
 A partir de cette loi des vitesses, il est aisé de construire un algorithme permettant à un robot de converger vers sont but selon une trajectoire souple et à vitesse constante.
 
-\begin{algorithm}                    
+\begin{algorithm}
 \caption{Convergence with no obstacle avoidance}
 \label{simpleConvergence}
 \begin{algorithmic}
@@ -65,7 +65,7 @@ Où $\kappa > 0$ est un paramètre qui fixe l'intensité de la convergence.
 
 Une première manière de permettre au robot d'éviter des obstacles est d'activer le capteur \emph{distance scanner} longue distance qui permet de détecter des obstacles jusqu'à 150cm du footbot. Un évitement très efficace mais parfois trop gourmand consiste alors à chercher à chaque pas la direction la plus proche de la direction du goal et pour laquelle l'obstacle repéré est le plus éloigné du robot (ou non existant) et à converger vers celle-ci. Ceci permet au robot d'éviter plusieurs obstacles à la fois, tout en gardant une trajectoire très optimisée.
 
-\begin{algorithm}                    
+\begin{algorithm}
 \caption{Convergence with greedy obstacle avoidance}
 \label{greedyConvergence}
 \begin{algorithmic}
@@ -228,7 +228,7 @@ function step()
 end
   \end{lstlisting}
   \begin{lstlisting}[caption=Rafraîchir la table des mesures à chaque pas, label=lst:updateObstaclesTable]
-function updateObstaclesTable(tabl, which) 
+function updateObstaclesTable(tabl, which)
   --tabl: the obstacleTable to refresh
   --(obstaclesTable or shortObstaclesTable)
   --which (string): which sensor to use
@@ -281,7 +281,7 @@ function findGoalAngle(goalDirection,alpha)
     goalAngle=goalAngle-2*PI
   end
   return goalAngle
-end  
+end
   \end{lstlisting}
   \begin{lstlisting}[caption=Trouver la direction optimale et la suivre]
 function obstacleAvoidance(goalAngle, obstaclesTable)
@@ -320,7 +320,7 @@ function step()
     emergencyAvoidance(emerProx, emerDir)
   else
   ...
-end    
+end
   \end{lstlisting}
   \begin{lstlisting}[caption=lecture du \emph{proximity sensor}]
 function readProxSensor()
@@ -353,7 +353,7 @@ function emergencyAvoidance(emerProx,emerDir)
     vRight=2*speed-vLeft
   end
   robot.wheels.set_velocity(vLeft, vRight)
-end    
+end
   \end{lstlisting}
 
   \appsec{Ajout d'une composante aléatoire à l'évitement}

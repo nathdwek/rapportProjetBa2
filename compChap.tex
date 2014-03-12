@@ -77,7 +77,7 @@ Une condition sur l'autonomie des robots a été imposée: l'autonomie est fixé
 
 Puisque pour le moment le seul but d'un robot est d'exploiter une ressource, celui-ci peut avorter un aller retour dès qu'il estime qu'il n'est plus capable d'atteindre son but et de revenir ensuite à son nid.
 
-\begin{algorithm}                    
+\begin{algorithm}
 \caption{Battery handling}
 \label{algo:batterie}
 \begin{algorithmic}[1]
@@ -116,7 +116,7 @@ function doCommon()
   =closestObstacleDirection(shortObstaclesTable)
 
   battery=battery-BATT_BY_STEP
-  backForBattery = backForBattery 
+  backForBattery = backForBattery
                    or battery-batterySecurity
                               *BATT_BY_STEP
                               *math.sqrt(posX^2+posY^2)
