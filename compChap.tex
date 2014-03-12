@@ -23,9 +23,14 @@ end
 
 \subsection{Opérations Communes}
 
-La fonction doCommon regroupe trois opérations:
+Les opérations communes à tous les états sont
+\begin{itemize}
+  \item L'écoute des capteurs <<vitaux>> c'est-à-dire qu'ils peuvent complètement écraser l'état courant: capteur de proximité (déclenche l'évitement d'urgence) et batterie (force le footbot à rentrer au nid)
+  \item L'écoute des autres capteurs qui par essence doivent toujours être consultés: capteur de position, de couleur du sol (permet au footbot d'enregistrer des nouvelles sources à tout moment) et communication entre robots (idem).
+  \item Lecture du capteur \emph{distance scanner (short range)} parce qu'il est utilisé en pratique quel que soit l'état du robot.
+\end{itemize}
 
-
+L'implémentation détaillée de la fonction doCommon est donnée dans l'annexe \ref{appsec:doCommon}. L'évitement d'urgence est celui présenté dans la section \ref{sec:emerAvoid}, tandis que pour retourner le plus rapidement possible au nid, le footbot utilise simplement le déplacement présenté au chapitre \ref{chap:move} avec pour goal le centre du nid.
 
 \section{Exploration}
 
@@ -55,3 +60,46 @@ Puisque pour le moment le seul but d'un robot est d'exploiter une ressource, cel
 Où evaluate cost(position, goal, [battery]) est la fonction qui évalue l'énergie nécessaire à l'accomplissement du reste du trajet. On peut par exemple utiliser la distance à vol d'oiseau restante à parcourir accompagnée d'un facteur de sécurité, ou alors utiliser une approche heuristique utilisant le rapport entre la batterie utilisée jusqu'au step courant et le déplacement net parcouru vers le but.
 
 En vue de la prochaine étape (la non omniscience des robots), le choix d'implémentation de la batterie autorise des sacrifices, c'est à dire, si un robot, étant à une position, estime devoir aller à une autre position et si sa batterie le lui permet, il ira à cette nouvelle position, sans toutefois vérifier qu'en y allant il pourra rentrer à la base recharger sa batterie. Ce choix favorise l'exploration de l'arène en mettant en avant la réussite de l'ensemble du groupe et non la réussite personnelle, pouvant être interprété comme la recharge de la batterie. Cependant des modifications doivent encore être apportées car nous ne pouvons nous permettre de sacrifier l'ensemble des robots, faute de quoi l'objectif ne sera pas atteint.
+
+\begin{subappendices}
+  \appsec{Implémentation de doCommon \label{appsec:doCommon}}
+\begin{lstlisting}[caption=fonction doCommon]
+function doCommon()
+  local obstacleProximity, obstacleDirection,
+        onSource, foundSource, backHome, gotSource,
+        emerProx, emerDir
+  
+  odometry()
+  onSource, foundSource, backHome = checkGoalReached()
+  gotSource = listen()
+  shortObstaclesTable = updateObstaclesTable("short_range",
+                                             shortObstaclesTable)
+  obstacleProximity, obstacleDirection
+  =closestObstacleDirection(shortObstaclesTable)
+
+  battery=battery-BATT_BY_STEP
+  backForBattery = backForBattery 
+                   or battery-batterySecurity
+                              *BATT_BY_STEP
+                              *math.sqrt(posX^2+posY^2)
+                              /BASE_SPEED<10
+
+  emerProx, emerDir=readProxSensor()
+  if battery==0 then
+    BASE_SPEED=0
+    logerr("batt empty")
+  end
+  if currentStep%5000==0 then
+    log(travels)
+  end
+  return obstacleProximity, obstacleDirection,
+         onSource, foundSource, backHome,
+         gotSource, emerProx, emerDir
+end
+\end{lstlisting}
+
+\begin{lstlisting}[]
+
+\end{lstlisting}
+
+\end{subappendices}
