@@ -183,17 +183,17 @@ Ensuite, au cours de chaque itération, les distances des sommets reliés par un
 
 Enfin, on répète l'exécution jusqu'à l'épuisement des sommets ou jusqu'à la sélection du sommet d'arrivée.
 Voici 3 figures qui représentent un exemple du principe utilisé. Le but est de trouver le plus court chemin entre le point A et le point J. Comme dit précédemment, après chaque mise à jour, le sommet possédant la distance minimale est rajouté au sous graphe. La figure \ref{fig:dijkstra} représente bien cela.
-\begin{figure}[h!]
+\begin{figure}[htb]
         \centering
-        \begin{subfigure}[h!]{0.4\textwidth}
+        \begin{subfigure}[htb]{0.4\textwidth}
                 \includegraphics[width=\textwidth]{pics/dijk1.png}
-                \caption{Mise à jour initiale\\\(\;\)}
-        \end{subfigure}   \begin{subfigure}[h!]{0.4\textwidth}
+                \caption{Mise à jour initiale\vspace{1em}}
+        \end{subfigure} \hfill \begin{subfigure}[htb]{0.4\textwidth}
                 \includegraphics[width=\textwidth]{pics/dijk2.png}
                 \caption{Mise à jour et construction du sous-graphe}
         \end{subfigure}
 
-        \begin{subfigure}[h!]{0.4\textwidth}
+        \begin{subfigure}[htb]{0.4\textwidth}
                 \includegraphics[width=\textwidth]{pics/dijk3.png}
                 \caption{Mise à jour et graphe final}
         \end{subfigure}
