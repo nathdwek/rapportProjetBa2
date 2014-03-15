@@ -26,7 +26,7 @@ v_g=\frac{v_r+v_l}{2}\\
 A partir de cette loi des vitesses, il est aisé de construire un algorithme permettant à un robot de converger vers sont but selon une trajectoire souple et à vitesse constante.
 
 \begin{algorithm}
-\caption{Convergence with no obstacle avoidance}
+\caption{Convergence simple sans évitement d'obstacle}
 \label{simpleConvergence}
 \begin{algorithmic}
   \REQUIRE \(SPEED \equiv \) Fixed speed of the footbot \(> 0\)
@@ -51,7 +51,7 @@ Où convergence($\theta, SPEED$) fixe la convergence du robot vers son goal. Ell
   \end{cases}
 \end{equation}
 
-Pour une fonction convergence($\theta, SPEED$) donnée satisfaisant à cette condition (par exemple dépendance linéaire en \(\theta\)), le footbot peut donc se rendre d'un point A à un point B, tant qu'il ne rencontre pas d'obstacles sur son trajet. Notons que cet algorithme s'intègre particulièrement bien dans la fonction \emph{step} demandée par ARGoS. Dans notre projet nous avons choisi
+Pour une fonction convergence($\theta, SPEED$) donnée satisfaisant à cette condition, le footbot peut donc se rendre d'un point A à un point B, tant qu'il ne rencontre pas d'obstacles sur son trajet. Notons que cet algorithme s'intègre parfaitement dans la fonction \emph{step} demandée par ARGoS. Dans notre projet nous avons choisi
 \[
 convergence(\theta, SPEED)=
 \begin{cases}
@@ -66,12 +66,13 @@ Où $\kappa > 0$ est un paramètre qui fixe l'intensité de la convergence.
 Une première manière de permettre au robot d'éviter des obstacles est d'activer le capteur \emph{distance scanner} longue distance qui permet de détecter des obstacles jusqu'à 150cm du footbot. Un évitement très efficace mais parfois trop gourmand consiste alors à chercher à chaque pas la direction la plus proche de la direction du goal et pour laquelle l'obstacle repéré est le plus éloigné du robot (ou non existant) et à converger vers celle-ci. Ceci permet au robot d'éviter plusieurs obstacles à la fois, tout en gardant une trajectoire très optimisée.
 
 \begin{algorithm}
-\caption{Convergence with greedy obstacle avoidance}
+\caption{Convergence avec évitement \emph{greedy} d'obstacles lointains}
 \label{greedyConvergence}
 \begin{algorithmic}
   \WHILE{goal not reached}
     \STATE update footbot position and orientation
-    \STATE find \( \theta \equiv\) angle between footbot orientation and best direction (closest to goal, least obstacles)
+    \STATE find the direction which is closest to goal direction amongst directions with the furthest or no obstacles
+    \STATE find \( \theta \equiv\) angle between footbot orientation and this optimal direction
     \STATE \( right\:velocity \gets\) convergence(\(\theta,\:SPEED\))
     \STATE \( left\:velocity \gets 2 \times SPEED-right\:velocity\) \COMMENT{so that overall speed stays equal to SPEED}
   \ENDWHILE
@@ -87,7 +88,7 @@ Cet évitement d'obstacles est directement utilisé dans notre projet. Son impl�
 La manière la plus directe de permettre au footbot d'éviter des obstacles ou autres robots lorqu'ils sont dangereusement proches est d'alors exécuter une routine d'évitement à la place de la routine de convergence précédente.
 \begin{algorithm}
 \label{obstacleConvergence}
-\caption{Convergence with close obstacle avoidance}
+\caption{Convergence avec évitement d'obstacles proches}
 \begin{algorithmic}
   \ENSURE footbot converges towards the goal at speed \(SPEED\) while avoiding obstacles
   \WHILE{goal not reached}
@@ -127,7 +128,7 @@ Grâce à aux différentes routines élémentaires présentées ci-dessus, il es
 
 Il est cependant possible d'améliorer cette solution en fonction de la connaissance de son environnement dont dispose le robot. Ainsi, dans le cas omniscient ou si le robot est capable de construire une carte de son environnement reprenant la position des différents obstacles il peut-être judicieux d'utiliser un algorithme de recherche du plus court chemin. La manière la plus directe de faire est de donner au footbot une liste de goal successifs qui le mèneront au goal final. Ceci  permet de réutiliser facilement les algorithmes déjà présentés tout en étant parfaitement compatible avec les valeurs de retour typiques d'un algorithme de recherche du plus court chemin. En effet, la plupart des recherches du plus court chemin utilisent une représentation en graphe d'un environnement. La valeur de retour d'une telle recherche est donc une liste des nœuds qu'il faut parcourir dans le graphe afin d'arriver au but final, ce qui est précisément ce que cet algorithme fait.
 \begin{algorithm}
-\caption{Convergence with path finding}
+\caption{Convergence avec chemin précalculé}
 \label{pathConvergence}
 \begin{algorithmic}
   \REQUIRE intermediate goals list $\equiv$ list of points which lead to the goal while avoiding the obstacles

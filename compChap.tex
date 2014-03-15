@@ -48,29 +48,67 @@ L'implémentation du modèle de diffusion est détaillée en annexe \ref{appsec:
 
 Une fois passé dans l'état \emph{exploite}, le footbot fait simplement des allers-retours entre une des ressources connues et le nid en suivant le modèle de déplacement présenté au chapitre \ref{chap:move}. Les opérations communes ont toujours lieu et le footbot continue donc à communiquer avec les autres robots et à lire la couleur du sol. Il reste donc à traiter du choix de la source à exploiter.
 
-A chaque fois qu'il est de retour au nid, le robot effectue ce choix avant de repartir exploiter une source. Pour ce faire, un indice de qualité est associé à chaque source connue. Le score d'une ressource influe sur la probabilité qu'a le robot de la choisir et cet indice est réévalué à chaque fois que le robot atteint la source en utilisant le pourcentage de batterie restant à ce moment (qui est directement lié au temps qu'à mis le robot à atteindre la source).
+Il est possible d'améliorer l'efficacité de l'exploitation en incitant les robots à exploiter les sources fournissant le meilleur rendement. Une possibilité est d'associer un score de qualité à chaque source connue et d'utiliser l'algorithme suivant:
 
-\begin{lstlisting}[caption=Choix de la ressource à exploiter]
-function chooseNewSource(rscList)
-  local sourceChosen=false
-  local pickSource
-  while not sourceChosen do
-    pickSource=robot.random.uniform_int(1,#rscList+1)
-    sourceChosen=robot.random.uniform()<rscList[pickSource].score
-  end
-  local x=rscList[pickSource][1]
-  local y=rscList[pickSource][2]
-  return pickSource,x,y
-  --return ressource index as well to make
-  --ressource evaluation easier later
-end
-\end{lstlisting}
+\begin{algorithm}
+\caption{Mise en place d'un score de qualité des sources}
+\begin{algorithmic}
+  \REQUIRE List of available ressources with their quality score
+  \LOOP
+    \STATE Pick ressource to mine while taking into account their quality score
+    \STATE Go to ressource
+    \STATE Update ressource quality score
+    \STATE Go to nest
+  \ENDLOOP
+\end{algorithmic}
+\end{algorithm}
 
-Cette implémentation permettrait en plus très facilement au robot de recommencer à explorer l'arène si les sources disponibles sont estimées peu rentables. En effet, il suffit d'ajouter un compteur à la boucle while et de repasser dans l'état \emph{explore} si cette ce compteur est atteint sans qu'une source ait été choisie. Cependant, il faudrait alors aussi permettre au footbot de changer d'état dans l'autre sens à d'autres occasions que seulement s'il trouve ou reçoit une nouvelle source, comme il a été évoqué dans la section \ref{sec:explore}.
+Il est en fait plus sensé de mettre à jour l'indice de qualité non pas après un aller, mais après un aller-retour. Cependant, ceci aurait été plus difficile à mettre en pratique dans notre cas, et nous avons donc choisi la solution présentée ci-dessus. Pour réévaluer le score d'une source, le pourcentage de batterie restant à ce moment est utilisé, ce qui indique directement le temps mis par le robot pour atteindre la source. Le nouveau score de qualité est donné par
+\[newScore(battery, oldScore)=
+  \begin{cases}
+      oldScore+(1-oldScore) \times \frac{battery}{100} & \text{si }battery > \beta\\
+      oldScore-oldScore \times \frac{100-battery}{100} & \text{si } battery \leq \beta\\
+  \end{cases}
+\]
 
-Les autres fonctions nécessaires à l'évaluation et au choix des ressources sont présentées dans l'annexe \ref{appsec:evalSource}
+Où $0<\beta<100$ indique le niveau minimum de batterie à l'arrivée pour qu'une source soit considérée comme rentable. Ceci permet une bonne convergence tout en gardant l'indice de qualité dans l'intervalle $[0,1]$.
+
+L'implémentation détaillée de l'évaluation et du choix des ressources est présentée dans l'annexe \ref{appsec:evalSource}.
 
 \section{Communication\label{sec:commu}}
+
+Vu la structure en boucle demandée par ARGoS, et grâce au pas d'éxécution assez court, les footbots peuvent entièrement partager leur connaissance des ressources sans que la limite de dix Bytes imposée par le système \emph{range and bearing} ne pose problème.
+
+\begin{algorithm}
+  \caption{Partage total de la connaissance des ressources}
+  \begin{algorithmic}
+  \REQUIRE Known ressources list
+  \ENSURE Total sharing of the ressource knowledge
+  \LOOP
+  \STATE broadcast a different source
+  \ENDLOOP
+  \end{algorithmic}
+\end{algorithm}
+
+Dans notre projet, les ressources étant stockées sous forme de liste, les footbots diffusent à chaque pas la i\ieme{} source dans la liste où i est le numéro du pas courant modulo la longueur de la liste des ressources connues.
+
+Une source étant représentée par un couple de nombre à virgule flottante compris entre -500 et 500, la conversion suivante est utilisée pour transmettre l'information:
+
+\vspace{1em}
+\makebox[\textwidth][c]{%
+\noindent\begin{tabular}{ |c|c|c|c|c|c|c| }
+\hline
+Byte 1 & Byte 2 & Byte 3 & Byte 4 & Byte 5 & Byte 6 & Byte 7 \\ \hline
+\multirow{3}{*}{type message} & \multirow{2}{*}{Signe x} & \multirow{2}{*}{Signe y} & Centaines x & Centaines y & Reste x & Reste y \\ \cline{4-7}
+&&&$\left\lfloor \frac{\lvert x \rvert}{100} \right\rfloor$ & $\left\lfloor \frac{\lvert y \rvert}{100} \right\rfloor$
+& ${\scriptsize \mathrm{round}}(\lvert x \rvert \bmod 100)$ & ${\scriptsize \mathrm{round}}(\lvert x \rvert \bmod 100)$ \\
+\cline{2-7}
+&\multicolumn{6}{ |c| }{coordonnées} \\
+\hline
+\end{tabular}
+}
+
+Le premier Byte indique comment décoder et interpréter le reste du message. La table ci-dessus n'est donc valide que pour les messages dont les 6 Bytes après le type sont alloués à une position dans l'arène. Dans notre projet, les footbots ne s'échangent que des messages de type 1: 6 Bytes indiquant les coordonnées d'une nouvelle source.
 
 \section{Gestion de l'autonomie}
 Une condition sur l'autonomie des robots a été imposée: l'autonomie est fixée dans le temps, ce qui signifie que leur batterie se décharge de manière constante à chaque pas d'ARGoS. Une valeur chiffrée n'a pas été imposée, mais les robots doivent juste être capables d'effectuer un aller-retour vers un point le plus éloigné de leur nid de départ à leur vitesse de régime. Une fois la batterie écoulée, le robot est rendu incapable de se déplacer mais pourra peut-être être dépanné par un autre membre de l'essaim dans le futur.
@@ -78,7 +116,7 @@ Une condition sur l'autonomie des robots a été imposée: l'autonomie est fixé
 Puisque pour le moment le seul but d'un robot est d'exploiter une ressource, celui-ci peut avorter un aller retour dès qu'il estime qu'il n'est plus capable d'atteindre son but et de revenir ensuite à son nid.
 
 \begin{algorithm}
-\caption{Battery handling}
+\caption{Gestion de l'autonomie}
 \label{algo:batterie}
 \begin{algorithmic}[1]
   \REQUIRE \(0 \leq battery \leq 100 :=\) the battery left of the robot
@@ -97,10 +135,10 @@ Où evaluate cost(position, goal, [battery]) est la fonction qui évalue l'éner
 En vue de la prochaine étape (la non omniscience des robots), le choix d'implémentation de la batterie autorise des sacrifices, c'est à dire, si un robot, étant à une position, estime devoir aller à une autre position et si sa batterie le lui permet, il ira à cette nouvelle position, sans toutefois vérifier qu'en y allant il pourra rentrer à la base recharger sa batterie. Ce choix favorise l'exploration de l'arène en mettant en avant la réussite de l'ensemble du groupe et non la réussite personnelle, pouvant être interprété comme la recharge de la batterie. Cependant des modifications doivent encore être apportées car nous ne pouvons nous permettre de sacrifier l'ensemble des robots, faute de quoi l'objectif ne sera pas atteint.
 
 \begin{subappendices}
-  \appsec{Opérations communes\label{appsec:doCommon}}
+  \appsec{Implémentation des opérations communes en Lua\label{appsec:doCommon}}
   \subsection{Appels faits par \emph{doCommon}}
 
-  L'implémentation des fonctions appelées est donnée dans les sections traitant de ce que font ces fonctions (fonction \emph{listen} $\Rightarrow$ communication, \ldots) à l'exception de \emph{checkGoalReached}, qui détecte de nouvelles sources et qui est présentée ci-dessous.
+  L'implémentation des fonctions appelées est donnée dans les sections traitant de ce que font ces fonctions (fonction \emph{listen} $\rightarrow$ communication, fonction \emph{closestObstacleDirection} $\rightarrow$ évitement d'obstacles, \ldots) à l'exception de \emph{checkGoalReached}, qui détecte de nouvelles sources et qui est présentée ci-dessous.
 \begin{lstlisting}[caption=fonction doCommon]
 function doCommon()
   local obstacleProximity, obstacleDirection,
@@ -141,13 +179,15 @@ end
 \begin{lstlisting}[caption=fonction checkGoalReached]
 function checkGoalReached()
   local foundSource, onSource, backHome=false,false,false
-  if floorIsBlack() and math.sqrt((posX)^2+(posY)^2)>=90 then
-    if sourceIsOriginal(posX,posY, ressources) then
+  local insideBlack, seeBlack = floorIsBlack()
+  if seeBlack and math.sqrt((posX)^2+(posY)^2)>=90 then
+    if insideBlack and sourceIsOriginal(posX,posY, ressources) then
       ressources[#ressources+1]={posX,posY,score=.5}
+      --store source. Initial quality index = 1/2
       foundSource=true
     end
     onSource=true
-  elseif floorIsBlack() and math.sqrt((posX)^2+(posY)^2)<=70 then
+  elseif seeBlack and math.sqrt((posX)^2+(posY)^2)<=70 then
     if goalX==0 and goalY==0 then
       backHome=true
     end
@@ -160,6 +200,23 @@ function checkGoalReached()
   return onSource, foundSource, backHome
 end
 \end{lstlisting}
+
+\begin{lstlisting}[caption=Détection de la couleur du sol]
+function floorIsBlack()
+  local insideBlack = true
+  --will tell if robot is fully inside a source or the nest
+  local seeBlack = false
+  --will tell if robot is touching a source or the nest
+  local clr,i
+  for i=1,8 do
+    clr = robot.base_ground[i].value
+    seeBlack = seeBlack or clr== 0
+    insideBlack = insideBlack and clr == 0
+  end
+  return insideBlack, seeBlack
+end
+\end{lstlisting}
+
 
 \begin{lstlisting}[caption=Vérifier l'originalité de la source]
 function sourceIsOriginal(x, y, rsc)
@@ -174,7 +231,7 @@ function sourceIsOriginal(x, y, rsc)
 end
 \end{lstlisting}
 
-\appsec{Implémentation du modèle de diffusion\label{appsec:gasLike}}
+\appsec{Implémentation du modèle de diffusion en Lua\label{appsec:gasLike}}
 
 \begin{lstlisting}[caption=Déplacement \emph{gaslike}]
 function gasLike(obstacleProximity, obstacleDirection)
@@ -200,7 +257,9 @@ function gasLike(obstacleProximity, obstacleDirection)
     robot.wheels.set_velocity(BASE_SPEED,BASE_SPEED)
   end
 end
+\end{lstlisting}
 
+\begin{lstlisting}[caption=Calcul de l'angle "réfléchi"]
 function rebound(alpha, obstacleDirection)
   if obstacleDirection<=12 then   --obstacle is to the left
     newAngle = -2*(PI/2-obstacleDirection)
@@ -212,7 +271,7 @@ function rebound(alpha, obstacleDirection)
 end
 \end{lstlisting}
 
-\appsec{Implémentation du choix de ressource à exploiter\label{appsec:evalSource}}
+\appsec{Implémentation du choix de ressource à exploiter en Lua\label{appsec:evalSource}}
 
 \begin{lstlisting}[caption=fonction doMine]
 function doMine(obstacleProximity, obstacleDirection,
@@ -238,18 +297,36 @@ function doMine(obstacleProximity, obstacleDirection,
 end
 \end{lstlisting}
 
+\begin{lstlisting}[caption=Choix de la ressource à exploiter]
+function chooseNewSource(rscList)
+  local sourceChosen=false
+  local pickSource
+  while not sourceChosen do
+    pickSource=robot.random.uniform_int(1,#rscList+1)
+    sourceChosen=robot.random.uniform()<rscList[pickSource].score
+  end
+  local x=rscList[pickSource][1]
+  local y=rscList[pickSource][2]
+  return pickSource,x,y
+  --return ressource index as well to make
+  --ressource evaluation easier later
+end
+\end{lstlisting}
+
+Cette implémentation permettrait en plus très facilement au robot de recommencer à explorer l'arène si les sources disponibles sont estimées peu rentables. En effet, il suffit d'ajouter un compteur à la boucle while et de repasser dans l'état \emph{explore} si ce compteur est atteint sans qu'une source ait été choisie. Cependant, il faudrait alors aussi permettre au footbot de changer d'état dans l'autre sens à d'autres occasions que seulement s'il trouve ou reçoit une nouvelle source, comme il a été évoqué dans la section \ref{sec:explore}.
+
 \begin{lstlisting}[caption=Evaluation de la qualité de la source]
 function evalSource(sourceId, battery)
-  if battery>70 then
+  if battery>GOOD_MINE_BATT then
     ressources[sourceId].score=ressources[sourceId].score
                                 +(1-ressources[sourceId].score)
                                   *battery/100
-    --Ensures score<1
+    --Ensures quality score goes up while staying <1
   else
     ressources[sourceId].score=ressources[sourceId].score
                                 -ressources[sourceId].score
                                   *(100-battery)/100
-    --Ensures score>0
+    --Ensures quality score goes down while staying >0
   end
 end
 \end{lstlisting}
