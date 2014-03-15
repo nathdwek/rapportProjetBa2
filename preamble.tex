@@ -33,11 +33,17 @@
 
 \pagestyle{headings}
 
+\usepackage{ifthen}
 \usepackage[title,titletoc]{appendix}
-\newcommand{\appsec}[1]{\clearpage \section{#1}}
+\newcommand{\appsec}[2][]{\clearpage%
+\ifthenelse{\equal{#1}{} }{
+  \section{#2}
+}{
+  \section[#1]{#2}
+}}
 %syntax is:
 %\begin{subappendices}
-%  \appsec{appendix title}
+%  \appsec[short title]{appendix title}
 %\end{subappendices}
 
 \bibliographystyle{alphaurl}
