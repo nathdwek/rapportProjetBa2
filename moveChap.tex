@@ -5,13 +5,13 @@ Comme il a été présenté dans l'introduction sur l'intelligence artificielle,
 Tout d'abord, il est intéressant de se pencher sur le lien entre les paramètres physiques du robot et la manière dont celui-ci peut effectuer l'action simple «se rendre d'un point A à un point B» dans le cas où le robot agit seul dans un environnement sans obstacles. Ensuite, nous verrons comment le robot peut s’accommoder des obstacles (fixes, prévisibles) et autres robots (mobiles, imprévisibles) à partir d'une ou plusieurs de ces actions simples.
 
 \begin{wrapfigure}{r}{0.3\textwidth}
-  \vspace{-3em}
+  \vspace{-1em}
   \begin{center}
     \includegraphics[width=0.15\textwidth]{pics/robotWheels.png}
   \end{center}
   \vspace{-2em}
   \caption{Signification physique de \(v_r,\: v_l,\: v_g \; et \; \omega_g \) \cite{argosSite1}}
-  \vspace{-1em}
+  \vspace{-2em}
   \end{wrapfigure}
 L'effecteur dont un footbot dispose afin de se déplacer est une paire de roues dont les vitesses peuvent être fixées de manière indépendante. A chaque instant, les seuls deux mouvements auxquels peut accéder le robot sont donc une translation parallèle aux roues et une rotation autour d'un point au milieu de l'axe des roues. La mécanique~\cite{meca} nous indique que la composition de ces deux mouvements est suffisante pour permettre au robot de se déplacer librement dans un plan mais surtout, elle nous donne la relation entre les vitesses des deux roues et la vitesse générale ainsi que la vitesse de rotation du robot:
 \begin{equation}
@@ -29,14 +29,12 @@ A partir de cette loi des vitesses, il est aisé de construire un algorithme per
 \caption{Convergence simple sans évitement d'obstacle}
 \label{simpleConvergence}
 \begin{algorithmic}
-  \REQUIRE \(SPEED \equiv \) Fixed speed of the footbot \(> 0\)
-  \REQUIRE Goal in arena
   \ENSURE footbot converges towards the goal at speed \(SPEED\)
   \WHILE{goal not reached}
     \STATE update footbot position and orientation
     \STATE calculate \( \theta \equiv\) angle between the direction of the goal from the footbot and footbot orientation
-    \STATE \( right\:velocity \gets\) convergence(\(\theta,\:SPEED\))
-    \STATE \( left\:velocity \gets 2 \times SPEED-right\:velocity\) \COMMENT{so that overall speed stays equal to SPEED}
+    \STATE \( right\:velocity = \) convergence(\(\theta,\:SPEED\))
+    \STATE \( left\:velocity = 2 \times SPEED-right\:velocity\) \COMMENT{so that overall speed stays equal to SPEED}
   \ENDWHILE
 \end{algorithmic}
 \end{algorithm}
@@ -79,7 +77,7 @@ Une première manière de permettre au robot d'éviter des obstacles est d'activ
 \end{algorithmic}
 \end{algorithm}
 
-La fonction convergence doit satisfaire au mêmes contraintes que précédemment et reste inchangée dans notre projet. Pour que l'évitement soit efficace, il faut que $\kappa$ soit assez élevé pour que le footbot s'oriente rapidement vers la direction optimale. Malgré cela, cet évitement reste très \emph{greedy}, dans le sens ou chercher absolument la direction la plus proche de celle du but peut mener à des collisions à cause de différents facteurs et approximations (footbot de taille non nulle, rayons du \emph{distance scanner} parfaitement tangent à un obstacle, \emph{distance scanner} ne faisant pas une mesure par direction à chaque pas, nombre de directions mesurées bien évidemment fini, \ldots). Une première manière de pallier à cela est de regrouper plusieurs mesures voisines en gardant systématiquement la mesure la moins optimiste. Magré cela, un évitement plus sûr d'obstacles proches est aussi nécessaire pour limiter le plus possible les collisions.
+La fonction convergence doit satisfaire au mêmes contraintes que précédemment et reste inchangée dans notre projet. Pour que l'évitement soit efficace, il faut que $\kappa$ soit assez élevé pour que le footbot s'oriente rapidement vers la direction optimale. Malgré cela, cet évitement reste très \emph{greedy}, dans le sens ou chercher absolument la direction la plus proche de celle du but peut mener à des collisions à cause de différents facteurs et approximations (footbot de taille non nulle, rayons du \emph{distance scanner} parfois parfaitement tangents à un obstacle, \emph{distance scanner} ne faisant pas une mesure par direction à chaque pas, nombre de directions mesurées bien évidemment fini, \ldots). Une première manière de pallier à cela est de regrouper plusieurs mesures voisines en gardant systématiquement la mesure la moins optimiste. Magré cela, un évitement plus sûr d'obstacles proches est aussi nécessaire pour limiter le plus possible les collisions.
 
 Cet évitement d'obstacles est directement utilisé dans notre projet. Son implémentation est détaillée dans l'annexe \ref{app:implEvitGreedy}
 
@@ -90,16 +88,15 @@ La manière la plus directe de permettre au footbot d'éviter des obstacles ou a
 \label{obstacleConvergence}
 \caption{Convergence avec évitement d'obstacles proches}
 \begin{algorithmic}
-  \ENSURE footbot converges towards the goal at speed \(SPEED\) while avoiding obstacles
   \WHILE{goal not reached}
     \STATE update footbot position and orientation
-    \STATE read proximity sensors \COMMENT{or whatever other sensor in use}
+    \STATE read proximity sensor \COMMENT{or whatever other sensor in use}
     \IF{no obstacles too close}
       \STATE do previous convergence
     \ELSE
-      \STATE \( right\:velocity \leftarrow\) avoidance(proximity sensor reading, \(SPEED\))
+      \STATE \( right\:velocity = \) avoidance(proximity sensor reading, \(SPEED\))
     \ENDIF
-    \STATE \( left\:velocity \leftarrow 2 \times SPEED-right\:velocity\) \COMMENT{so that overall speed stays equal to SPEED}
+    \STATE \( left\:velocity = 2 \times SPEED-right\:velocity\) \COMMENT{so that overall speed stays equal to SPEED}
   \ENDWHILE
 \end{algorithmic}
 \end{algorithm}
@@ -114,7 +111,7 @@ Dans notre projet nous avons choisi
   \end{cases}
 \]
 
-Où $ 1 \leq dir \leq 12 $ est la direction de l'obstacle perçu le plus proche et \hbox{$0 \leq prox \leq 1$} donne la proximité de cette obstacle. Comme présenté plus haut, ce sont les deux informations dont on dispose si l'on utilise le capteur de proximité.  \(1 \leq \alpha \leq 12 \) est un paramètre qui fixe l'influence de la direction de l'obstacle le plus proche et \(0 \leq \beta \) fixe l'influence de la proximité de cette obstacle. Cet évitement est partiellement tiré des exemples fourni sur le site du cours présentant ARGoS \cite{argosSite1}.
+Où $ 1 \leq dir \leq 12 $ est la direction de l'obstacle perçu le plus proche et \hbox{$0 \leq prox \leq 1$} donne la proximité de cette obstacle. Comme présenté plus haut, ce sont les deux informations dont on dispose si l'on utilise le capteur de proximité.  \(1 \leq \alpha \leq 12 \) est un paramètre qui fixe l'influence de la direction de l'obstacle le plus proche et \(0 \leq \beta \) fixe l'influence de la proximité de cette obstacle. Cet évitement est partiellement tiré des exemples fourni sur le site du cours présentant ARGoS.~\cite{argosSite1}
 
 \section{Evitement intermédiaire}
 
@@ -122,23 +119,22 @@ Additionnellement, il est possible d'utiliser le capteur \emph{short range} du \
 
 De plus, les capteurs \emph{short range} et \emph{long range} sont des capteurs rotatifs, ce qui signifie que la table des mesures n'est pas complètement renouvelée à chaque pas\footnote{D'où la nécessité de rafraîchir les tables de mesures de la manière qui est faite au listing \ref{lst:updateObstaclesTable}}. Les deux capteurs étant orientés perpendiculairement, il est donc avantageux de les utiliser tous les deux afin de ne pas avoir de direction pour laquelle la dernière mesure est <<trop vieille>>.
 
-Grâce à aux différentes routines élémentaires présentées ci-dessus, il est donc possible de construire une résoudre la partie déplacement du cahier des charges. L'implémentation détaillée des routines d'évitement supplémentaire est donnée dans l'annexe~\ref{app:implEvitClose}
+Grâce aux différentes routines élémentaires présentées ci-dessus, il est donc possible de construire une solution pratique à la partie déplacement du cahier des charges. L'implémentation détaillée des routines d'évitement supplémentaire est donnée dans l'annexe~\ref{app:implEvitClose}.
 
 \section{Déplacement selon un chemin précalculé}
 
-Il est cependant possible d'améliorer cette solution en fonction de la connaissance de son environnement dont dispose le robot. Ainsi, dans le cas omniscient ou si le robot est capable de construire une carte de son environnement reprenant la position des différents obstacles il peut-être judicieux d'utiliser un algorithme de recherche du plus court chemin. La manière la plus directe de faire est de donner au footbot une liste de goal successifs qui le mèneront au goal final. Ceci  permet de réutiliser facilement les algorithmes déjà présentés tout en étant parfaitement compatible avec les valeurs de retour typiques d'un algorithme de recherche du plus court chemin. En effet, la plupart des recherches du plus court chemin utilisent une représentation en graphe d'un environnement. La valeur de retour d'une telle recherche est donc une liste des nœuds qu'il faut parcourir dans le graphe afin d'arriver au but final, ce qui est précisément ce que cet algorithme fait.
+Il est cependant possible d'améliorer cette solution en fonction de la connaissance de son environnement dont dispose le robot. Ainsi, dans le cas omniscient ou si le robot est capable de construire une carte de son environnement reprenant la position des différents obstacles il peut-être judicieux d'utiliser un algorithme de recherche du plus court chemin. La manière la plus directe de faire est de donner au footbot une liste de points successifs qui le mèneront au goal final. Ceci  permet de réutiliser facilement les algorithmes déjà présentés tout en étant parfaitement compatible avec les valeurs de retour typiques d'un algorithme de recherche du plus court chemin. En effet, la plupart de ces algorithmes utilisent une représentation en graphe d'un environnement. La valeur de retour d'une telle recherche est donc une liste des nœuds qu'il faut parcourir dans le graphe afin d'arriver au but final, ce qui est précisément ce que cet algorithme fait.
 \begin{algorithm}
 \caption{Convergence avec chemin précalculé}
 \label{pathConvergence}
 \begin{algorithmic}
   \REQUIRE intermediate goals list $\equiv$ list of points which lead to the goal while avoiding the obstacles
-  \ENSURE footbot goes to goal while avoiding obstacles
   \FOR{intermediate goal in intermediate goals list}
   \WHILE{intermediate goal not reached}
     \STATE update footbot position and orientation
     \STATE read proximity sensors \COMMENT{or whatever other sensor in use}
     \IF{no obstacles too close}
-      \STATE do greedy avoidance
+      \STATE do greedy avoidance towards intermediate goal
     \ELSE
       \STATE do close obstacle avoidance
     \ENDIF
@@ -151,60 +147,15 @@ L'implémentation de l'algorithme de recherche du plus court chemin qui fournit 
 
 \subsection{Recherche du plus court chemin}
 
-\subsubsection{Algorithme A*}
-\cite{wikiA*}
+\subsubsection{Algorithmes déterministes classiques}
 
-En informatique, A* est un algorithme informatique qui consiste à mettre en place un processus de traçage d'un chemin traversable efficace entre des points. Les points sont considérés comme des noeuds.
+Bernard a fourni du contenu mais il faut un peu voir à quel point on veut réécrire cette partie, sachant que ça n'a pas été utilisé dans le projet (Approche plus synthétique et globale)
 
-A* utilise une «best-first» recherche et trouve le chemin possédant le moindre coût à partir d'un nœud initial donné à un nœud but.
+\subsubsection{Algorithmes issu de la swarm intelligence (?)}
 
-Pour cela, il utilise une fonction de coût pour déterminer l'ordre dans lequel les visites de recherche des nœuds de l'arbre vont s'effectuer. Cette fonction de coût est la somme de deux autres fonctions. La fonction coût de la trajectoire passée qui est la distance connue à partir du nœud de départ au dernier parcouru lors de la recherche. Et la fonction coût du chemin futur qui est une estimation heuristique de la distance entre le dernier nœud parcouru et le nouveau nœud à atteindre .
+\cite{pheromonesForaging,antOpti} (Parce que la léchouille, c'est bien!)
 
-\begin{wrapfigure}{r}{0.3\textwidth}
-  \vspace{-20pt}
-  \begin{center}
-    \includegraphics[width=0.28\textwidth]{pics/aStar.png}
-  \end{center}
-  \caption{Représentation d'une éxécution de A*\cite{wikiA*}}
-\end{wrapfigure}
-Cet algorithme possède quand même des limites. Il est effectivement efficace dans le cas où l'on considère les robots comme omniscient, connaissant l'environnement et, donc, connaissant la position de la source et des obstacles se trouvant dans l'environnement. Dans le cas de non-omniscience, l'arène est inconnue et on ne possède aucunes données à propos de celles-ci. Et c'est ici que se trouve le plus grand défaut de l'algorithme A*.
-
-A* détermine un chemin complet de nœuds pour arriver d'un noeud départ à un noeud but. Lorsqu'il ne possède pas de données complètes à propos de l'arène, il est bloqué lors de son exécution et ne peut donc pas déterminer le chemin que doit suivre le robot. Il faudra adapter l'algorithme A* afin de remédier à ce problème.
-
-\subsubsection{Algoritme de Dijkstra}
-\cite{wikiDijkstra}
-
-L’algorithme de Dijkstra est un algorithme servant à résoudre le problème du plus court chemin. Le principe de l'algorithme est le suivant:
-
-Il s'agit de mettre en place progressivement un sous-graphe dans lequel sont classés les différents sommets. Un ordre croissant est établit entre les sommets et il est fixé en fonction de la distance minimale qui éloignent ces sommets à celui de départ. Cette distance correspond à la somme des nœuds parcourus.
-
-Au début, les distances de chaque sommet par rapport au sommet de départ sont considérées comme infinie et on attribue à celui-ci une distance de 0.
-
-Ensuite, au cours de chaque itération, les distances des sommets reliés par un nœud au dernier du sous-graphe sont mis à jour. Cette mis à jour consiste à ajouter la valeur du nœud à la distance séparant le sommet de départ à ce dernier sommet. Après cette mise à jour, l'ensemble des sommets, ne faisant pas partis du sous-graphe, sont examinés et celui qui possède la distance minimal y est ajouté.
-
-Enfin, on répète l'exécution jusqu'à l'épuisement des sommets ou jusqu'à la sélection du sommet d'arrivée.
-Voici 3 figures qui représentent un exemple du principe utilisé. Le but est de trouver le plus court chemin entre le point A et le point J. Comme dit précédemment, après chaque mise à jour, le sommet possédant la distance minimale est rajouté au sous graphe. La figure \ref{fig:dijkstra} représente bien cela.
-\begin{figure}[htb]
-        \centering
-        \begin{subfigure}[htb]{0.4\textwidth}
-                \includegraphics[width=\textwidth]{pics/dijk1.png}
-                \caption{Mise à jour initiale\vspace{1em}}
-        \end{subfigure} \hfill \begin{subfigure}[htb]{0.4\textwidth}
-                \includegraphics[width=\textwidth]{pics/dijk2.png}
-                \caption{Mise à jour et construction du sous-graphe}
-        \end{subfigure}
-
-        \begin{subfigure}[htb]{0.4\textwidth}
-                \includegraphics[width=\textwidth]{pics/dijk3.png}
-                \caption{Mise à jour et graphe final}
-        \end{subfigure}
-        \caption{\label{fig:dijkstra}Représentation d'une éxécution de Dijkstra \cite{wikiDijkstra}}
-\end{figure}
-
-
-En effet, le sommet E est rajouté au sous graphe et non le sommet I car la distance à parcourir entre A et E est plus petite que entre A et I.
-
-Il faut souligner que cet algorithme possède le même inconvénient qu'A*.
+(Permettrait de parler de ce fameux algorithme des fourmis, avec un réel background et surtout une réelle application potentielle dans le projet)
 
 \begin{subappendices}
   \appsec{Implémentation du déplacement en Lua}
@@ -357,6 +308,9 @@ function emergencyAvoidance(emerProx,emerDir)
 end
   \end{lstlisting}
 
-  \appsec{Ajout d'une composante aléatoire à l'évitement}
+\appsec{Ajout d'une composante aléatoire à l'évitement}
+
+Parler de modems 56k qui font des bruits bizarres en attendant que ta mère raccroche le téléphone.
+(Utilisé pour de vrai dans le projet, je vais l'écrire très très bientôt).
 
 \end{subappendices}

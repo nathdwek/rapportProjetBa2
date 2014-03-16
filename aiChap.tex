@@ -1,8 +1,10 @@
+PROBABLEMENT BESOIN D'UN PETIT PEU DE REECRITURE ICI
+
 Afin de mener à bien l'objectif énoncé dans l'introduction, les robots doivent se comporter de manière intelligente. Le plus important est l'interaction avec l'environnement. En effet, le choix de la bonne action est cruciale. Il est cependant délicat de définir une seule <<meilleure>> action. Ceci est développé plus bas, en introduisant le concept de \emph{rationalité}.
 De manière générale, un robot peut être assimilé à un agent qui reçoit des \emph{percepts} par l'intermédiaire de ses capteurs. L' \emph{agent} réagit alors en exerçant une action sur l'environnement grâce à ses \emph{effecteurs}.
-\begin{figure}[h!]
+\begin{figure}[htb]
   \centering
-  \includegraphics[width=0.7\textwidth]{pics/cycleInteractionAI.png}
+  \includegraphics[width=0.9\textwidth]{pics/cycleInteractionAI.png}
     \caption{Cycle d'interaction entre l'environnement et les agents}
 \end{figure}
 La description des différents capteurs et effecteurs du robot est faite dans le chapitre \ref{chap:argosFootbot}.
@@ -25,6 +27,9 @@ Maintenant qu'une présentation générale de l'intelligence artificielle a ét�
 
 \section{Algorithme des fourmis}
 
+TODO/TO RETHINK +CF SECTION 4.6.2
+
+OLD:
 Cet algorithme est basé sur le comportement des fourmis dont une des particularités est la communication au travers de l'environnement par dépôts de phéromones.
 
 L'algorithme se présente de la manière suivante. Pour commencer, une exploration de l'environnement est faite par les fourmis. Si l'une d'entre elles trouve une source, elle déposera, lors de son retour au nid, des phéromones tout au long du chemin qu'elle emprunte. Dès lors, lorsque que d'autres fourmis partiront à la recherche de nourriture, elles auront tendance à suivre le chemin  marqué de phéromones. Et à leur retour à la colonie, elles renforceront cette piste.
