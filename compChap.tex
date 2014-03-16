@@ -101,14 +101,20 @@ Une source étant représentée par un couple de nombre à virgule flottante com
 Byte 1 & Byte 2 & Byte 3 & Byte 4 & Byte 5 & Byte 6 & Byte 7 \\ \hline
 \multirow{3}{*}{type message} & \multirow{2}{*}{Signe x} & \multirow{2}{*}{Signe y} & Centaines x & Centaines y & Reste x & Reste y \\ \cline{4-7}
 &&&$\left\lfloor \frac{\lvert x \rvert}{100} \right\rfloor$ & $\left\lfloor \frac{\lvert y \rvert}{100} \right\rfloor$
-& ${\scriptsize \mathrm{round}}(\lvert x \rvert \bmod 100)$ & ${\scriptsize \mathrm{round}}(\lvert x \rvert \bmod 100)$ \\
+& $\scriptstyle\mathrm{round}(\lvert x \rvert \bmod 100)$ & $\scriptstyle\mathrm{round}(\lvert x \rvert \bmod 100)$ \\
 \cline{2-7}
 &\multicolumn{6}{ |c| }{coordonnées} \\
 \hline
 \end{tabular}
 }
 
-Le premier Byte indique comment décoder et interpréter le reste du message. La table ci-dessus n'est donc valide que pour les messages dont les 6 Bytes après le type sont alloués à une position dans l'arène. Dans notre projet, les footbots ne s'échangent que des messages de type 1: 6 Bytes indiquant les coordonnées d'une nouvelle source.
+\vspace{1em}
+
+Le premier Byte indique comment décoder et interpréter le reste du message. La table ci-dessus n'est donc valide que pour les messages dont les 6 Bytes après le type sont alloués à une position dans l'arène. Dans notre projet, les seuls messages échangés dont de ce type et transmettent la position d'une nouvelle source, mais cette manière de faire est flexible et permet de facilement rajouter d'autres échanges: il suffirait par exemple de changer le type en gardant le même encodage de position pour implémenter la partie communication du ravitaillement entre robots.
+
+Lorsque qu'un robot reçoit un message, il le décode en se servant du type du message et de l'encodage ci-dessus, et, dans le cas d'une nouvelle source, vérifie son originalité et la stocke alors en mémoire. Si le robot est déjà en train d'exploiter des ressources, le traitement s'arrête là. Sinon, le footbot doit alors choisir s'il commence à exploiter les ressources ou non, comme décrit dans la section \ref{sec:explore}.
+
+L'implémentation en Lua de la communication est détaillée dans l'annexe \ref{appsec:commu}.
 
 \section{Gestion de l'autonomie}
 Une condition sur l'autonomie des robots a été imposée: l'autonomie est fixée dans le temps, ce qui signifie que leur batterie se décharge de manière constante à chaque pas d'ARGoS. Une valeur chiffrée n'a pas été imposée, mais les robots doivent juste être capables d'effectuer un aller-retour vers un point le plus éloigné de leur nid de départ à leur vitesse de régime. Une fois la batterie écoulée, le robot est rendu incapable de se déplacer mais pourra peut-être être dépanné par un autre membre de l'essaim dans le futur.
@@ -147,6 +153,9 @@ function doCommon()
 
   odometry()
   onSource, foundSource, backHome = checkGoalReached()
+  if #ressources>=1 then
+    broadcastSource(chooseSourceToBroadcast())
+  end
   gotSource = listen()
   shortObstaclesTable = updateObstaclesTable("short_range",
                                              shortObstaclesTable)
@@ -233,6 +242,30 @@ end
 
 \appsec{Implémentation du modèle de diffusion en Lua\label{appsec:gasLike}}
 
+\begin{lstlisting}[caption=fonction doExplore]
+function doExplore(obstacleProximity, obstacleDirection,
+                    foundSource, gotSource)
+  if foundSource then
+    explore=false
+    goalX,goalY=0,0
+  end
+  if gotSource then
+    if robot.random.uniform()<MINE_PROB_WHEN_SRC_RECVD then
+    --choose whether or not you start mining
+      explore,goalX,goalY=false,0,0
+      --refill battery before starting to mine
+    end
+  end
+  if not backForBattery then
+    gasLike(obstacleProximity, obstacleDirection)
+  else
+    obstaclesTable = updateObstaclesTable("long_range",obstaclesTable)
+    move(obstaclesTable, obstacleProximity, obstacleDirection,0,0)
+  end
+end
+\end{lstlisting}
+
+
 \begin{lstlisting}[caption=Déplacement \emph{gaslike}]
 function gasLike(obstacleProximity, obstacleDirection)
   local goalAngle
@@ -275,7 +308,7 @@ end
 
 \begin{lstlisting}[caption=fonction doMine]
 function doMine(obstacleProximity, obstacleDirection,
-                onSource, backHome, foundSource)
+                onSource, backHome)
   if onSource then
     if goalX~=0 and goalY~=0 then
     --if we don't check for this then
@@ -331,6 +364,94 @@ function evalSource(sourceId, battery)
 end
 \end{lstlisting}
 
+\appsec{Implémentation en Lua de la communication\label{appsec:commu}}
 
+\subsection{Envoi de message}
+
+\begin{lstlisting}[caption=Envoi d'un message différent à chaque pas]
+function doCommon()
+  ...
+  if #ressources>=1 then
+    broadcastSource(chooseSourceToBroadcast())
+  end
+  ...
+end
+
+function broadcastSource(x,y)
+  local msg=sourceIn(x,y)
+  robot.range_and_bearing.set_data(msg)
+end
+
+function chooseSourceToBroadcast()
+  local i=(currentStep%#ressources)+1
+  return ressources[i][1],ressources[i][2]
+end
+\end{lstlisting}
+
+\begin{lstlisting}[caption=Encodage du message]
+function sourceIn(x,y)
+  local msgOut={1,sgnIn(x),sgnIn(y),
+                math.floor(abs(x)/100),math.floor(abs(y)/100),
+                math.floor(abs(x)%100),math.floor(abs(y)%100),
+                0,0,0}
+  return msgOut
+end
+
+function sgnIn(n)
+   local sgn
+   if n==0 then
+      sgn=0
+   else
+      if n==abs(n) then
+         sgn=1
+      else
+         sgn=2
+      end
+   end
+   return sgn
+end
+\end{lstlisting}
+
+
+\subsection{Réception de message}
+
+\begin{lstlisting}[caption=Ecoute du capteur à chaque pas]
+function doCommon()
+  ...
+  gotSource = listen()
+  ...
+end
+
+function listen()
+  local gotSource=false
+  for i=1,#robot.range_and_bearing do
+    if robot.range_and_bearing[i].data[1]==1 then
+      local source = sourceOut(robot.range_and_bearing[i].data)
+      if sourceIsOriginal(source[1],source[2],ressources) then
+      --Check for originality
+        source.score=.5
+        ressources[#ressources+1]=source
+        gotSource=true
+      end
+    end
+  end
+  return gotSource
+end
+\end{lstlisting}
+
+\begin{lstlisting}[caption=Décodage du message]
+function sourceOut(msg)
+   local x,y
+   x=100*msg[4]+msg[6]
+   if msg[2]==2 then
+      x=-x
+   end
+   y=100*msg[5]+msg[7]
+   if msg[3]==2 then
+      y=-y
+   end
+   return {x,y}
+end
+\end{lstlisting}
 
 \end{subappendices}
