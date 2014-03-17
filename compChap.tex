@@ -1,3 +1,7 @@
+Avec la méthode de déplacement développée au chapitre précédent, nous disposons de la principale <<brique>> élémentaire nécessaire à la construction d'un comportement intelligent. Pour ce faire, nous allons dans ce chapitre assembler ces briques à un niveau d'abstraction plus élevé, même s'il faudra encore développer quelques outils de plus bas niveau.
+
+\section{Vue d'ensemble du comportement}
+
 Après s'être initialisé, chaque footbot exécute a chaque pas une séquence d'opérations communes à tous les états possibles, suivie d'une séquence d'opérations propre à l'état courant.
 \begin{lstlisting}[caption=Fonction step]
 function step()
@@ -19,7 +23,7 @@ function step()
 end
 \end{lstlisting}
 
-\section{Opérations Communes}
+\subsection{Opérations Communes}
 
 Les opérations communes à tous les états sont
 \begin{itemize}
@@ -32,7 +36,7 @@ A part pour l'évitement d'urgence, toutes les décisions sont donc uniquement p
 
 L'implémentation détaillée de la fonction doCommon est donnée dans l'annexe \ref{appsec:doCommon}. L'évitement d'urgence est celui présenté dans la section \ref{sec:emerAvoid}, tandis que pour retourner le plus rapidement possible au nid, le footbot utilise simplement le déplacement présenté au chapitre \ref{chap:move} avec pour goal le centre du nid.
 
-\section{Exploration\label{sec:explore}}
+\subsection{Exploration\label{sec:explore}}
 
 Tous les robots sont initialisés dans l'état \emph{explore}. Dans cet état, ils se déplacent selon une méthode d'exploration donnée jusqu'à recevoir le signal \emph{foundSource} ou \emph{gotSource}. Le premier signal signifie que le footbot a lui-même trouvé une nouvelle source, tandis que le second signal indique qu'une nouvelle source lui a été transmise. C'est la fonction \emph{doCommon} qui s'assure qu'une source potentielle est effectivement originale et la stocke alors dans la liste des sources connues. Cette liste est partagée avec les autres robots (voir section \ref{sec:commu}) et utilisée lorsque le robot est dans l'état \emph{exploite}.
 
@@ -44,7 +48,7 @@ Ce modèle est assez satisfaisant en théorie et en pratique mais n'est pas tout
 
 L'implémentation du modèle de diffusion est détaillée en annexe \ref{appsec:gasLike}.
 
-\section{Exploitation}
+\subsection{Exploitation}
 
 Une fois passé dans l'état \emph{exploite}, le footbot fait simplement des allers-retours entre une des ressources connues et le nid en suivant le modèle de déplacement présenté au chapitre \ref{chap:move}. Les opérations communes ont toujours lieu et le footbot continue donc à communiquer avec les autres robots et à lire la couleur du sol. Il reste donc à traiter du choix de la source à exploiter.
 
@@ -66,16 +70,18 @@ Il est possible d'améliorer l'efficacité de l'exploitation en incitant les rob
 Il est en fait plus sensé de mettre à jour l'indice de qualité non pas après un aller, mais après un aller-retour. Cependant, ceci aurait été plus difficile à mettre en pratique dans notre cas, et nous avons donc choisi la solution présentée ci-dessus. Pour réévaluer le score d'une source, le pourcentage de batterie restant à ce moment est utilisé, ce qui indique directement le temps mis par le robot pour atteindre la source. Le nouveau score de qualité est donné par
 \[newScore(battery, oldScore)=
   \begin{cases}
-      oldScore+(1-oldScore) \times \frac{battery}{100} & \text{si }battery > \beta\\
+      oldScore+(1-oldScore) \times \frac{battery}{100} & \text{si }battery \geq \gamma\\
       oldScore-oldScore \times \frac{100-battery}{100} & \text{si } battery \leq \beta\\
   \end{cases}
 \]
 
-Où $0<\beta<100$ indique le niveau minimum de batterie à l'arrivée pour qu'une source soit considérée comme rentable. Ceci permet une bonne convergence tout en gardant l'indice de qualité dans l'intervalle $[0,1]$.
+Où $0<\boldsymbol{\beta}<\gamma$ indique le niveau maximum de batterie à l'arrivée pour qu'une source soit considérée comme très peu rentable et $\beta<\boldsymbol{\gamma}<100$ indique le niveau minimum pour qu'une source soit considérée comme très rentable. Ceci permet une bonne convergence tout en gardant l'indice de qualité dans l'intervalle $[0,1]$.
 
 L'implémentation détaillée de l'évaluation et du choix des ressources est présentée dans l'annexe \ref{appsec:evalSource}.
 
-\section{Communication\label{sec:commu}}
+\section{Derniers outils bas niveau}
+
+\subsection{Communication\label{sec:commu}}
 
 Vu la structure en boucle demandée par ARGoS, et grâce au pas d'éxécution assez court, les footbots peuvent entièrement partager leur connaissance des ressources sans que la limite de dix Bytes imposée par le système \emph{range and bearing} ne pose problème.
 
@@ -116,11 +122,49 @@ Lorsqu'un robot reçoit un message, il le décode en se servant du type du messa
 
 L'implémentation en Lua de la communication est détaillée dans l'annexe \ref{appsec:commu}.
 
-\section{Gestion de l'autonomie}
+\subsection{Gestion de l'autonomie}
 
-L'autonomie limitée des footbots impose aux footbots de revenir au nid à intervalle régulier. Ceci est immédiat à implémenter, à l'exception de la problématique principale: quel indicateur utiliser pour effectuer la décision de rentrer au nid.
+L'autonomie limitée des footbots impose aux footbots de revenir au nid à intervalles réguliers. Ceci est immédiat à implémenter, à l'exception de la problématique principale: quel indicateur utiliser pour effectuer la décision de rentrer au nid.
 
 TODOOOOOOOOOOOOOOO
+
+\section{Retour sur le comportement général}
+
+\tikzstyle{decision} = [diamond, draw, fill=blue!20,
+    text width=4.5em, text badly centered, node distance=3cm, inner sep=0pt]
+\tikzstyle{block} = [rectangle, draw, fill=blue!20,
+    text width=5em, text centered, rounded corners, minimum height=4em]
+\tikzstyle{line} = [draw, -latex']
+\tikzstyle{cloud} = [draw, ellipse,fill=red!20, node distance=3cm,
+    minimum height=2em]
+
+\begin{tikzpicture}[node distance = 2cm, auto]
+    % Place nodes
+    \node [cloud] (init) {Start};
+    \node [block, right of=init, xshift=0.7cm] (explore) {Explore};
+    \node [block, below of=explore, yshift=-1cm] (store1) {Store and share it};
+    \node [block, right of=explore, xshift=4cm] (store2) {Store and share it};
+    \node [block, below of=store1, yshift=-1cm] (mine) {Mine source(s)};
+    \node [decision, below of=store2, yshift=-0.5cm] (decide) {Start to Mine?};
+    \node [block, below of=mine, yshift=-1cm] (store3) {Store and share it};
+%     \node [block, below of=decide, node distance=3cm] (stop) {stop};
+    % Draw edges
+     \path [line] (init) -- (explore);
+     \path [line] (explore) -- node [anchor=east] {New source found}(store1);
+     \path [line] (explore) -- node {New source received}(store2);
+     \path [line] (store1) -- (mine);
+     \path [line] (store2) -- (decide);
+     \path [line] (decide) -- ++(2cm,0) node[anchor=north] {no} --++(0,5cm) -| (explore);
+     \path [line] (decide) -- ++(0,-2cm) node [anchor=west]{yes} |-(mine);
+     \path [line] (mine) -- node {New source found or received}(store3);
+     \path [line] (store3) -- ++(-2cm,0) |- (mine);
+%     \path [line,dashed] (system) |- (evaluate);
+\end{tikzpicture}
+
+
+
+
+
 
 \begin{subappendices}
   \appsec{Implémentation des opérations communes en Lua\label{appsec:doCommon}}
@@ -291,24 +335,34 @@ end
 \begin{lstlisting}[caption=fonction doMine]
 function doMine(obstacleProximity, obstacleDirection,
                 onSource, backHome)
-  if onSource then
-    if goalX~=0 and goalY~=0 then
-    --if we don't check for this then
-    --we reevaluate at every step we're on the source
-      evalSource(sourceId, battery)
-    end
-    goalX=0
-    goalY=0
-  elseif backHome then
-    sourceId,goalX,goalY=chooseNewSource(ressources)
-    travels=travels+1
-  end
-  if backForBattery then
-    move(obstaclesTable, obstacleProximity, obstacleDirection,0,0)
-  else
-    obstaclesTable = updateObstaclesTable("long_range",obstaclesTable)
-    move(obstaclesTable, obstacleProximity, obstacleDirection,goalX,goalY)
-  end
+   if onSource then
+      if not hasMined then
+      --if we don't check for this
+      --then we reevaluate at every step
+      --spent on the source
+         evalSource(sourceId, battery)
+         goalX,goalY=0,0
+      end
+      hasMined=true
+   elseif backHome then
+      sourceId,goalX,goalY=chooseNewSource(ressources)
+      if hasMined then
+         travels=travels+1
+         hasMined=false
+      end
+   elseif backForBattery then
+      if goalX~=0 and goalY~=0 then
+      --if we don't check for this then
+      --we decrease the score at every step
+      --spent on the way back
+         goalX,goalY=0,0
+         evalSource(sourceId, 30)
+         --decrease score by a big margin:
+         --we didn't even get to the source
+      end
+   end
+   obstaclesTable = updateObstaclesTable("long_range",obstaclesTable)
+   move(obstaclesTable, obstacleProximity, obstacleDirection,goalX,goalY)
 end
 \end{lstlisting}
 
@@ -337,7 +391,7 @@ function evalSource(sourceId, battery)
                                 +(1-ressources[sourceId].score)
                                   *battery/100
     --Ensures quality score goes up while staying <1
-  else
+  elseif battery<BAD_MINE_BATT then
     ressources[sourceId].score=ressources[sourceId].score
                                 -ressources[sourceId].score
                                   *(100-battery)/100
