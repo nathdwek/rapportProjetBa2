@@ -42,24 +42,24 @@ Tous les robots sont initialisés dans l'état \emph{explore}. Dans cet état, i
 
 Dans le cas où le robot a trouvé une source, il passe directement dans l'état exploite. Par contre, dans le cas où le robot reçu une nouvelle source, il décide aléatoirement s'il continue à explorer ou s'il se met à exploiter la ou les ressources qu'il connaît. La communication entre robot étant relativement efficace, ceci permet d'éviter que tous les robots se contentent d'une unique source dès qu'un seul individu en a fait la découverte. Une amélioration possible serait de permettre au robot de passer de l'état \emph{explore} à l'état \emph{exploite} même en l'absence de découverte originale s'il estime avoir déjà passé trop de temps à explorer.
 
-Le parcours d'exploration pris par le robot est une composante importante et complexe de l'efficacité de la phase d'exploration. Malheureusement, par manque de temps, nous avons dû nous limiter à un simple modèle de diffusion: les robots se déplacent en ligne droite et rebondissent sur tous les obstacles qu'ils rencontrent à la manière de simples particules. Ceci permet d'assurer que les robots migrent des zones les plus concentrées en footbots vers les zones les moins concentrées et que, plus globalement, les robots occupent tout l'espace disponible.
+Le parcours d'exploration pris par le robot est une composante importante et complexe de l'efficacité de la phase d'exploration. Des travaux précédents montrent cependant qu'une marche aléatoire (voir \cite{foraging} par exemple où la marche d'exploration est décrite en détail) peut suffire lorsque le nombre de robots est assez élevés, et leurs interactions suffisament développées. Nous nous limitons donc à un simple modèle de diffusion: les robots se déplacent en ligne droite et rebondissent sur tous les obstacles qu'ils rencontrent à la manière de simples particules. Ceci permet d'assurer que les robots migrent des zones les plus concentrées en footbots vers les zones les moins concentrées et que, plus globalement, les robots occupent tout l'espace disponible.
 
-Ce modèle est assez satisfaisant en théorie et en pratique mais n'est pas tout à fait adapté pour plusieurs raisons. Tout d'abord, la gestion de l'autonomie entraîne bien évidemment des retours fréquents des robots vers le nid, ce qui annule en partie l'effet désiré d'homogénéiser la concentration de robots. Ceci devrait être mieux pris en compte. D'autre part, ce modèle permet d'éviter relativement bien l'exploration d'une même zone par un nombre élevé de robots, mais ne permet pas de réellement privilégier d'éventuelles <<zones d'ombres>> qui n'ont encore jamais été explorées. Cependant, le principal facteur limitant semble bien être la portée extrèmement limitée des capteurs de couleur de sol.
+Le modèle utilisé est assez satisfaisant en théorie et en pratique mais n'est pas tout à fait adapté pour plusieurs raisons. Tout d'abord, la gestion de l'autonomie entraîne bien évidemment des retours fréquents des robots vers le nid, ce qui annule en partie l'effet désiré d'homogénéiser la concentration de robots. Ceci devrait être mieux pris en compte. D'autre part, ce modèle permet d'éviter relativement bien l'exploration d'une même zone par un nombre élevé de robots, mais ne permet pas de réellement privilégier d'éventuelles <<zones d'ombres>> qui n'ont encore jamais été explorées. Cependant, le principal facteur limitant semble bien être la portée extrèmement limitée des capteurs de couleur de sol.
 
 L'implémentation du modèle de diffusion est détaillée en annexe \ref{appsec:gasLike}.
 
-\subsection{Exploitation}
+\subsection{Exploitation\label{sec:mine}}
 
-Une fois passé dans l'état \emph{exploite}, le footbot fait simplement des allers-retours entre une des ressources connues et le nid en suivant le modèle de déplacement présenté au chapitre \ref{chap:move}. Les opérations communes ont toujours lieu et le footbot continue donc à communiquer avec les autres robots et à lire la couleur du sol. Il reste donc à traiter du choix de la source à exploiter.
+Une fois passé dans l'état \emph{exploite}, le footbot fait simplement des allers-retours entre une des ressources connues et le nid en utilisant les méthodes de déplacement développées au chapitre \ref{chap:move}. Les opérations communes ont toujours lieu et le footbot continue donc à communiquer avec les autres robots et à lire la couleur du sol. Il reste donc à traiter du choix de la source à exploiter.
 
-Il est possible d'améliorer l'efficacité de l'exploitation en incitant les robots à exploiter les sources fournissant le meilleur rendement. Une possibilité est d'associer un score de qualité à chaque source connue et d'utiliser l'algorithme suivant:
+Ce choix est important: il est possible d'augmenter l'efficacité de l'exploitation en incitant les robots à exploiter les sources fournissant le meilleur rendement. Différentes méthodes peuvent être utilisés à cet effet, nous utilisons l'algorithme $\varepsilon$-greedy car il est simple, compréhensible, et utilise une seule variable qui représente directement le degré d'exploration~\cite{foraging}. Cet algorithme sélectionne avec une probabilité $1-\varepsilon$ la source au meilleur rendement et avec une probabilité $\varepsilon$ une source au hasard parmi les sources moins rentables.
 
 \begin{algorithm}
 \caption{Mise en place d'un score de qualité des sources}
 \begin{algorithmic}
   \REQUIRE List of available ressources with their quality score
   \LOOP
-    \STATE Pick ressource to mine while taking into account their quality score
+    \STATE Pick ressource to mine using $\varepsilon$-greedy algorithm
     \STATE Go to ressource
     \STATE Update ressource quality score
     \STATE Go to nest
@@ -67,7 +67,7 @@ Il est possible d'améliorer l'efficacité de l'exploitation en incitant les rob
 \end{algorithmic}
 \end{algorithm}
 
-Il est en fait plus sensé de mettre à jour l'indice de qualité non pas après un aller, mais après un aller-retour. Cependant, ceci aurait été plus difficile à mettre en pratique dans notre cas, et nous avons donc choisi la solution présentée ci-dessus. Pour réévaluer le score d'une source, le pourcentage de batterie restant à ce moment est utilisé, ce qui indique directement le temps mis par le robot pour atteindre la source. Le nouveau score de qualité est donné par
+Il est en fait plus sensé de mettre à jour l'indice de qualité non pas après un simple aller, mais après un aller-retour complet. Cependant, ceci aurait été plus difficile à mettre en pratique dans notre cas, et nous avons donc choisi la solution présentée ci-dessus. Pour réévaluer le score d'une source, le pourcentage de batterie restant à ce moment est utilisé, ce qui indique directement le temps mis par le robot pour atteindre la source. Le nouveau score de qualité est donné par
 \[newScore(battery, oldScore)=
   \begin{cases}
       oldScore+(1-oldScore) \times \frac{battery}{100} & \text{si }battery \geq \gamma\\
@@ -76,6 +76,8 @@ Il est en fait plus sensé de mettre à jour l'indice de qualité non pas après
 \]
 
 Où $0<\boldsymbol{\beta}<\gamma$ indique le niveau maximum de batterie à l'arrivée pour qu'une source soit considérée comme très peu rentable et $\beta<\boldsymbol{\gamma}<100$ indique le niveau minimum pour qu'une source soit considérée comme très rentable. Ceci permet une bonne convergence tout en gardant l'indice de qualité dans l'intervalle $[0,1]$.
+
+L'utilisation d'une décision $\varepsilon$-greedy nécessitant déjà de trouver le meilleur indice de qualité, une amélioration possible serait de donner la possibilité au footbot de repasser dans l'état \emph{explore} si le meilleur score dans la liste passe en dessous d'une certaine valeur critique. Cependant, il faudrait alors aussi permettre au footbot de changer d'état dans l'autre sens à d'autres occasions que seulement s'il trouve ou reçoit une nouvelle source, comme il a été évoqué dans la section \ref{sec:explore}.
 
 L'implémentation détaillée de l'évaluation et du choix des ressources est présentée dans l'annexe \ref{appsec:evalSource}.
 
@@ -130,8 +132,7 @@ TODOOOOOOOOOOOOOOO
 
 \section{Retour sur le comportement général}
 
-Pour conclure ce chapitre, revenons sur le comportement
-
+Pour conclure ce chapitre, reprenons un point de vue plus large sur le comportement que nous avons construit. La figure \ref{fig:genFlowchart} résument les différents états et transitions traversés par chaque footbot tout au long d'une expérience. Les transitions en pointillés représentent les deux axes d'amélioration que nous avons évoqués aux paragraphes \ref{sec:explore} et \ref{sec:mine}.
 \begin{figure}[htb]
   \begin{tikzpicture}[node distance = 2cm,>=stealth, auto]
     % Place nodes
@@ -142,7 +143,6 @@ Pour conclure ce chapitre, revenons sur le comportement
     \node [cloud, below of=store1] (mine) {Mine source(s)};
     \node [decision, below of=store2] (decide) {Start to Mine?};
     \node [block, below of=mine, yshift=-1cm] (store3) {Store and share it};
-%     \node [block, below of=decide, node distance=3cm] (stop) {stop};
     % Draw edges
      \path [line] (init) -- (explore);
      \path [line] (explore) -- node [text width=2cm] {New source found}(store1);
@@ -154,10 +154,11 @@ Pour conclure ce chapitre, revenons sur le comportement
      \path [line] (mine) -- node[text width=3cm] {New source found or received}(store3);
      \path [line] (store3) -- ++(-3cm,0) |- (mine);
      \draw [dashed, <->](mine) .. controls ++(-2.5cm,3cm) .. node[yshift=2cm,xshift=1.8cm,text width=2.2cm,style={rectangle,fill=white}]{No satisfying source} node[yshift=-1.1cm,xshift=2cm,text width=2cm,style={rectangle,fill=white}]{No recent discovery}(explore);
-%     \path [line,dashed] (system) |- (evaluate);
 \end{tikzpicture}
-\caption{}
+\caption{Flowchart décrivant le comportement haut niveau de chaque robot~\cite{foraging}.\label{fig:genFlowchart}}
 \end{figure}
+
+Il s'agit maintenant de mettre ce comportement à l'épreuve, d'évaluer ses performances, d'examiner quelles possibilités d'optimisation et d'adaptation sont déjà offertes et d'identifier les défauts plus fondamentaux qui sonts présents.
 
 \begin{subappendices}
   \appsec{Implémentation des opérations communes en Lua\label{appsec:doCommon}}
@@ -361,35 +362,46 @@ end
 
 \begin{lstlisting}[caption=Choix de la ressource à exploiter]
 function chooseNewSource(rscList)
-  local sourceChosen=false
-  local pickSource
-  while not sourceChosen do
-    pickSource=robot.random.uniform_int(1,#rscList+1)
-    sourceChosen=robot.random.uniform()<rscList[pickSource].score
-  end
-  local x=rscList[pickSource][1]
-  local y=rscList[pickSource][2]
-  return pickSource,x,y
-  --return ressource index as well to make
-  --ressource evaluation easier later
+   local newSourceId
+   if #rscList>1 then
+      local pickBest=robot.random.uniform()
+      if pickBest<(1-EPSILONGREED) then
+         newSourceId=1 --We know 1 is the index
+                       --of the best source
+      else
+         newSourceId=robot.random.uniform_int(2,#rscList+1)
+      end
+   else
+      newSourceId=1
+   end
+   local x=rscList[newSourceId][1]
+   local y=rscList[newSourceId][2]
+   return newSourceId,x, y
 end
 \end{lstlisting}
 
-Cette implémentation permettrait en plus très facilement au robot de recommencer à explorer l'arène si les sources disponibles sont estimées peu rentables. En effet, il suffit d'ajouter un compteur à la boucle while et de repasser dans l'état \emph{explore} si ce compteur est atteint sans qu'une source ait été choisie. Cependant, il faudrait alors aussi permettre au footbot de changer d'état dans l'autre sens à d'autres occasions que seulement s'il trouve ou reçoit une nouvelle source, comme il a été évoqué dans la section \ref{sec:explore}.
-
 \begin{lstlisting}[caption=Evaluation de la qualité de la source]
 function evalSource(sourceId, battery)
-  if battery>GOOD_MINE_BATT then
-    ressources[sourceId].score=ressources[sourceId].score
-                                +(1-ressources[sourceId].score)
-                                  *battery/100
-    --Ensures quality score goes up while staying <1
-  elseif battery<BAD_MINE_BATT then
-    ressources[sourceId].score=ressources[sourceId].score
-                                -ressources[sourceId].score
-                                  *(100-battery)/100
-    --Ensures quality score goes down while staying >0
-  end
+   local score=ressources[sourceId].score
+   if battery>GOOD_MINE_BATT then
+      score=score+(1-score)*battery/100
+      --Ensures quality score goes up while staying <1
+      if score>ressources[1].score then
+      --Check if source isn't the new best source
+         ressources[sourceId], ressources[1]=
+         ressources[1], ressources[sourceId]
+      end
+   elseif battery<BAD_MINE_BATT then
+      score=score-score*(100-battery)/100
+      --Ensures quality score goes down while staying >0
+      if sourceId==1 then --Check if source is still the best source
+         indexOtherMax=findIndexOtherMax(ressources)
+         if ressources[indexOtherMax].score>score then
+            ressources[indexOtherMax], ressources[1]=
+            ressources[1],ressources[indexOtherMax]
+         end
+      end
+   end
 end
 \end{lstlisting}
 
