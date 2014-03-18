@@ -130,41 +130,34 @@ TODOOOOOOOOOOOOOOO
 
 \section{Retour sur le comportement général}
 
-\tikzstyle{decision} = [diamond, draw, fill=blue!20,
-    text width=4.5em, text badly centered, node distance=3cm, inner sep=0pt]
-\tikzstyle{block} = [rectangle, draw, fill=blue!20,
-    text width=5em, text centered, rounded corners, minimum height=4em]
-\tikzstyle{line} = [draw, -latex']
-\tikzstyle{cloud} = [draw, ellipse,fill=red!20, node distance=3cm,
-    minimum height=2em]
+Pour conclure ce chapitre, revenons sur le comportement
 
-\begin{tikzpicture}[node distance = 2cm, auto]
+\begin{figure}[htb]
+  \begin{tikzpicture}[node distance = 2cm,>=stealth, auto]
     % Place nodes
     \node [cloud] (init) {Start};
     \node [block, right of=init, xshift=0.7cm] (explore) {Explore};
     \node [block, below of=explore, yshift=-1cm] (store1) {Store and share it};
     \node [block, right of=explore, xshift=4cm] (store2) {Store and share it};
-    \node [block, below of=store1, yshift=-1cm] (mine) {Mine source(s)};
-    \node [decision, below of=store2, yshift=-0.5cm] (decide) {Start to Mine?};
+    \node [cloud, below of=store1] (mine) {Mine source(s)};
+    \node [decision, below of=store2] (decide) {Start to Mine?};
     \node [block, below of=mine, yshift=-1cm] (store3) {Store and share it};
 %     \node [block, below of=decide, node distance=3cm] (stop) {stop};
     % Draw edges
      \path [line] (init) -- (explore);
-     \path [line] (explore) -- node [anchor=east] {New source found}(store1);
+     \path [line] (explore) -- node [text width=2cm] {New source found}(store1);
      \path [line] (explore) -- node {New source received}(store2);
      \path [line] (store1) -- (mine);
      \path [line] (store2) -- (decide);
-     \path [line] (decide) -- ++(2cm,0) node[anchor=north] {no} --++(0,5cm) -| (explore);
-     \path [line] (decide) -- ++(0,-2cm) node [anchor=west]{yes} |-(mine);
-     \path [line] (mine) -- node {New source found or received}(store3);
-     \path [line] (store3) -- ++(-2cm,0) |- (mine);
+     \path [line] (decide) -- ++(2cm,0) node[xshift=.5cm, yshift=.7cm] {No} --++(0,5cm) -| (explore);
+     \path [line] (decide) -- ++(0,-2cm) node [anchor=west]{Yes} |-(mine);
+     \path [line] (mine) -- node[text width=3cm] {New source found or received}(store3);
+     \path [line] (store3) -- ++(-3cm,0) |- (mine);
+     \draw [dashed, <->](mine) .. controls ++(-2.5cm,3cm) .. node[yshift=2cm,xshift=1.8cm,text width=2.2cm,style={rectangle,fill=white}]{No satisfying source} node[yshift=-1.1cm,xshift=2cm,text width=2cm,style={rectangle,fill=white}]{No recent discovery}(explore);
 %     \path [line,dashed] (system) |- (evaluate);
 \end{tikzpicture}
-
-
-
-
-
+\caption{}
+\end{figure}
 
 \begin{subappendices}
   \appsec{Implémentation des opérations communes en Lua\label{appsec:doCommon}}
