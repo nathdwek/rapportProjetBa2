@@ -314,7 +314,7 @@ end
 
 Le déplacement présenté jusqu'à présent est purement déterministe. Dans un système multi-agents où tous les agents suivent le même comportement déterministe, un phénomène peut apparaître où après une première collision, les collisions se répètent un grand nombre de fois, puisqu'après la première rencontre les deux agents impliqués suivent exactement le même comportement avec des conditions initiales proches (au moment de la collision). Ici, collision est à prendre au sens large puisque ce phénomène est par exemple présent dans les protocoles de télécommunication.
 
-Les deux solutions les plus couramment utilisées sont l'instauration de priorités, où l'introduction d'une composante aléatoire comme par exemple l'\emph{exponential backoff} en télécommunication, où, après $i$ collisions, les deux agents tentent d'envoyer le paquet après un temps tiré aléatoirement dans $[0,t^{max}_i]$ avec $t^{max}_i$ grandissant exponentiellement en fonction de $i$.
+Les deux solutions les plus couramment utilisées sont l'instauration de priorités, où l'introduction d'une composante aléatoire comme par exemple l'\emph{exponential backoff} en télécommunication, où, après $i$ collisions, les deux agents tentent d'envoyer le paquet après un temps tiré aléatoirement dans $[0,t^{max}_i]$ avec $t^{max}_i$ grandissant exponentiellement en fonction de $i$.~\cite{wiki:backoff}
 
 Dans notre projet, après une collisions, les deux footbots tirent aléaoirement une nouvelle vitesse inférieure ou égale à la vitesse de base et gardent cette nouvelle vitesse pendant un bref temps après la collision, avant de reprendre leur vitesse originale.
 
