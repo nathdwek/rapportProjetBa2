@@ -1,15 +1,29 @@
 PROBABLEMENT BESOIN D'UN PETIT PEU DE REECRITURE ICI
 
 Afin de mener à bien l'objectif énoncé dans l'introduction, les robots doivent se comporter de manière intelligente. Le plus important est l'interaction avec l'environnement. En effet, le choix de la bonne action est cruciale. Il est cependant délicat de définir une seule <<meilleure>> action. Ceci est développé plus bas, en introduisant le concept de \emph{rationalité}.
-De manière générale, un robot peut être assimilé à un agent qui reçoit des \emph{percepts} par l'intermédiaire de ses capteurs. L' \emph{agent} réagit alors en exerçant une action sur l'environnement grâce à ses \emph{effecteurs}.
+De manière générale, un robot peut être assimilé à un agent qui reçoit des \emph{percepts} par l'intermédiaire de ses capteurs. L'\emph{agent} réagit alors en exerçant une action sur l'environnement grâce à ses \emph{effecteurs}.
 \begin{figure}[htb]
-  \centering
-  \includegraphics[width=0.9\textwidth]{pics/cycleInteractionAI.png}
+\centering
+\begin{tikzpicture}[node distance = 2cm,>=stealth, auto]
+  \node[rect](envir){\textsc{Environnement}};
+  \node[block, below of=envir, yshift=-5em, xshift=-10em](capteurs){Capteurs};
+  \node[decision, right of=capteurs, xshift=2.5em](decision){Choix de l'action};
+  \node[block, right of=decision, xshift=4.5em](actions){Effecteurs};
+  \coordinate (decision') at ($(decision) + (0,1.7cm)$);
+  \path [line] (capteurs)--(decision);
+  \path [line] (decision)--(actions);
+  \path [line] (capteurs|-envir.south)-- node[yshift=1em, xshift=-2em,style={rectangle,fill=white}]{Percepts} (capteurs.north);
+  \path [line] (actions.north)-- node[yshift=1em, xshift=2em,style={rectangle,fill=white}]{Actions} (actions|-envir.south);
+  \begin{scope}[on background layer]
+  \node [draw=black, fill=green!20 ,fit= (actions) (decision) (decision') (capteurs)](agents){};%
+  \node [yshift=-1em] at (agents.north) {\textsc{Agents}};
+  \end{scope}
+\end{tikzpicture}
     \caption{Cycle d'interaction entre l'environnement et les agents}
 \end{figure}
 La description des différents capteurs et effecteurs du robot est faite dans le chapitre \ref{chap:argosFootbot}.
 
-Comme énoncé précédemment la rationalité d'un agent peut être délicate à mesurer. D'après \cite{AIBrique}:
+La rationalité d'un agent peut être difficile à mesurer. D'après \cite{AIBrique}:
 \begin{quote}
   <<La rationalité n'est pas synonyme de perfection, la rationalité maximise la performance espérée tandis que la perfection maximise la performance réelle.>>
 \end{quote}
