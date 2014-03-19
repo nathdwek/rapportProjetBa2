@@ -142,20 +142,20 @@ Pour conclure ce chapitre, reprenons un point de vue plus large sur le comportem
     \node [block, right of=explore, xshift=4cm] (store2) {Store and share it};
     \node [cloud, below of=store1] (mine) {Mine source(s)};
     \node [decision, below of=store2] (decide) {Start to Mine?};
-    \node [block, below of=mine, yshift=-1cm] (store3) {Store and share it};
+    \node [block, below of=mine, yshift=-0.7cm] (store3) {Store and share it};
     % Draw edges
      \path [line] (init) -- (explore);
      \path [line] (explore) -- node [text width=2cm] {New source found}(store1);
      \path [line] (explore) -- node {New source received}(store2);
      \path [line] (store1) -- (mine);
      \path [line] (store2) -- (decide);
-     \path [line] (decide) -- ++(2cm,0) node[xshift=.5cm, yshift=.7cm] {No} --++(0,5cm) -| (explore);
+     \path [line] (decide) -- ++(2cm,0) node[xshift=.5cm, yshift=.7cm] {No} --++(0,4.5cm) -| (explore);
      \path [line] (decide) -- ++(0,-2cm) node [anchor=west]{Yes} |-(mine);
      \path [line] (mine) -- node[text width=3cm] {New source found or received}(store3);
      \path [line] (store3) -- ++(-3cm,0) |- (mine);
      \draw [dashed, <->](mine) .. controls ++(-2.5cm,3cm) .. node[yshift=2cm,xshift=1.8cm,text width=2.2cm,style={rectangle,fill=white}]{No satisfying source} node[yshift=-1.1cm,xshift=2cm,text width=2cm,style={rectangle,fill=white}]{No recent discovery}(explore);
 \end{tikzpicture}
-\caption{Flowchart décrivant le comportement haut niveau de chaque robot~\cite{foraging}.\label{fig:genFlowchart}}
+\caption{Comportement haut niveau de chaque robot~\cite{foraging}.\label{fig:genFlowchart}}
 \end{figure}
 
 Il s'agit maintenant de mettre ce comportement à l'épreuve, d'évaluer ses performances, d'examiner quelles possibilités d'optimisation et d'adaptation sont déjà offertes et d'identifier les défauts plus fondamentaux qui sonts présents.
