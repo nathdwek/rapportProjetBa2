@@ -1,4 +1,4 @@
-Comme il a été présenté dans l'introduction sur l'intelligence artificielle, et vu en pratique dans la structure de base d'un comportement Lua interprétable par ARGoS, un footbot exécute à chaque step une séquence d'opérations. On peut distinguer dans cette séquence trois types d'opérations (cf chapitre \ref{chap:AI}): l'écoute des capteurs, la prise de décision et les interactions sur l'environnement par l'intermédiaire des effecteurs, que l'on nommera ici simplement sous le nom d'actions. Ces actions sont donc limitées et déterminées par les effecteurs dont dispose le robot et qui sont décrits au chapitre \ref{chap:argosFootbot}. Dans ce chapitre-ci, l'un des effecteurs primordiaux d'un footbot sera examiné: son déplacement.
+Comme il a été présenté dans l'introduction sur l'intelligence artificielle, et vu en pratique dans la structure de base d'un comportement Lua interprétable par ARGoS, un footbot exécute à chaque step une séquence d'opérations. On peut distinguer dans cette séquence trois types d'opérations (cf chapitre \ref{chap:AI}): l'écoute des capteurs, la prise de décision et les interactions sur l'environnement par l'intermédiaire des effecteurs, que l'on nommera ici simplement sous le nom d'actions. Ces actions sont donc limitées et déterminées par les effecteurs dont dispose le robot et qui sont décrits au chapitre \ref{chap:argosFootbot}. Parmi ces actions, l'une des plus importantes, accomplie par chaque robot à tout instant sera examinée dans ce chapitre: le déplacement. Même si ce projet met l'accent sur le comportement haut niveau des footbots et leurs interactions, l'efficacité du déplacement a une influence majeure d'abord sur la survie des robots et ensuite sur la performance de leur comportement.
 
 \section{Aspects physiques du déplacement}
 
@@ -49,7 +49,7 @@ Où convergence($\theta, SPEED$) fixe la convergence du robot vers son goal. Ell
   \end{cases}
 \end{equation}
 
-Pour une fonction convergence($\theta, SPEED$) donnée satisfaisant à cette condition, le footbot peut donc se rendre d'un point A à un point B, tant qu'il ne rencontre pas d'obstacles sur son trajet. Notons que cet algorithme s'intègre parfaitement dans la fonction \emph{step} demandée par ARGoS. Dans notre projet nous avons choisi
+Pour une fonction convergence($\theta, SPEED$) donnée satisfaisant à cette condition, le footbot peut donc se rendre d'un point A à un point B, tant qu'il ne rencontre pas d'obstacles sur son trajet. Notons que cet algorithme suit la structure <<écoute des capteurs - prise de décision - action>> évoquée plusieurs fois déjà, ce qui fait qu'il peut s'intégrer presque tel quel dans la fonction \emph{step} demandée par ARGoS. Dans notre projet nous avons choisi
 \[
 convergence(\theta, SPEED)=
 \begin{cases}
@@ -61,7 +61,7 @@ Où $\kappa > 0$ est un paramètre qui fixe l'intensité de la convergence.
 
 \section{Évitement \emph{greedy} d'obstacles lointains}
 
-Une première manière de permettre au robot d'éviter des obstacles est d'activer le capteur \emph{distance scanner} longue distance qui permet de détecter des obstacles jusqu'à 150cm du footbot. Un évitement très efficace mais parfois trop gourmand consiste alors à chercher à chaque pas la direction la plus proche de la direction du goal et pour laquelle l'obstacle repéré est le plus éloigné du robot (ou non existant) et à converger vers celle-ci. Ceci permet au robot d'éviter plusieurs obstacles à la fois, tout en gardant une trajectoire très optimisée.
+Une première manière de permettre au robot d'éviter des obstacles est d'activer le capteur \emph{distance scanner} longue distance qui permet de détecter des obstacles jusqu'à 150cm du footbot. Un évitement consiste alors à chercher à chaque pas la direction la plus proche de la direction du goal parmi les directions pour lesquelles l'obstacle repéré est le plus éloigné du robot (ou non existant) et à converger vers celle-ci. Ceci permet au robot d'éviter plusieurs obstacles à la fois, tout en gardant une trajectoire très optimisée.
 
 \begin{algorithm}
 \caption{Convergence avec évitement \emph{greedy} d'obstacles lointains}
@@ -76,10 +76,11 @@ Une première manière de permettre au robot d'éviter des obstacles est d'activ
   \ENDWHILE
 \end{algorithmic}
 \end{algorithm}
+La fonction convergence doit satisfaire au mêmes contraintes que précédemment et reste inchangée dans notre projet. Pour que l'évitement soit efficace, il faut que $\kappa$ soit assez élevé pour que le footbot s'oriente rapidement vers la direction optimale (puisque celle-ci est réévaluée à chaque pas et change donc fréquemment).
 
-La fonction convergence doit satisfaire au mêmes contraintes que précédemment et reste inchangée dans notre projet. Pour que l'évitement soit efficace, il faut que $\kappa$ soit assez élevé pour que le footbot s'oriente rapidement vers la direction optimale. Malgré cela, cet évitement reste très \emph{greedy}, dans le sens ou chercher absolument la direction la plus proche de celle du but peut mener à des collisions à cause de différents facteurs et approximations (footbot de taille non nulle, rayons du \emph{distance scanner} parfois parfaitement tangents à un obstacle, \emph{distance scanner} ne faisant pas une mesure par direction à chaque pas, nombre de directions mesurées bien évidemment fini, \ldots). Une première manière de pallier à cela est de regrouper plusieurs mesures voisines en gardant systématiquement la mesure la moins optimiste. Magré cela, un évitement plus sûr d'obstacles proches est aussi nécessaire pour limiter le plus possible les collisions.
+Cet évitement est \emph{greedy} car il sélectionne toujours la direction la plus proche de celle du goal parmi les directions acceptables (voir plus haut) ce qui signifie qu'un choix momentanément optimal est fait à chaque pas. Ceci assure que le goal est atteint en un temps <<raisonnablement proche>> du temps optimal~\cite{mehlhorn_shortest_2008} mais peut cependant mener à des collisions à cause de différentes sources d'erreurs et approximations (footbot de taille non nulle, rayons du \emph{distance scanner} parfois parfaitement tangents à un obstacle, \emph{distance scanner} ne faisant pas une mesure par direction à chaque pas, nombre de directions mesurées bien évidemment fini, \ldots). Une première manière de pallier à cela est de regrouper plusieurs mesures voisines en gardant systématiquement la mesure la moins optimiste. Magré cela, un évitement plus sûr d'obstacles proches est aussi nécessaire pour limiter le plus possible les collisions.
 
-Cet évitement d'obstacles est directement utilisé dans notre projet. Son implémentation est détaillée dans l'annexe \ref{app:implEvitGreedy}
+Cet évitement d'obstacles est directement utilisé dans notre projet. Son implémentation est détaillée dans l'annexe \ref{app:implEvitGreedy}.
 
 \section{Evitement sûr d'obstacles proches\label{sec:emerAvoid}}
 
@@ -115,7 +116,7 @@ Où $ 1 \leq dir \leq 12 $ est la direction de l'obstacle perçu le plus proche 
 
 \section{Evitement intermédiaire}
 
-Additionnellement, il est possible d'utiliser le capteur \emph{short range} du \emph{distance scanner} pour que le robot puisse déjà commencer à dévier sa trajectoire s'il détecte des obstacles proche de moins de 30cm~\cite{argosSite1}. Ceci permet de déclencher plus tôt le même évitement aux constantes numériques près (évitement moins brusque) que ci-dessus. Cet évitement est beaucoup moins \emph{greedy} que le premier évitement présenté, tout en étant forcément plus souple que l'évitement <<d'urgence>> précédent.
+Additionnellement, il est possible d'utiliser le capteur \emph{short range} du \emph{distance scanner} pour que le robot puisse déjà commencer à dévier sa trajectoire s'il détecte des obstacles proche de moins de 30cm~\cite{argosSite1}. Ceci permet de déclencher plus tôt le même évitement aux constantes numériques près (évitement moins brusque) que ci-dessus. Cet évitement est beaucoup plus sûr que le premier évitement présenté, tout en étant forcément plus souple que l'évitement <<d'urgence>> précédent.
 
 De plus, les capteurs \emph{short range} et \emph{long range} sont des capteurs rotatifs, ce qui signifie que la table des mesures n'est pas complètement renouvelée à chaque pas\footnote{D'où la nécessité de rafraîchir les tables de mesures de la manière qui est faite au listing \ref{lst:updateObstaclesTable}.}. Les deux capteurs étant orientés perpendiculairement, il est donc avantageux de les utiliser tous les deux afin de ne pas avoir de direction pour laquelle la dernière mesure est <<trop vieille>>.
 
