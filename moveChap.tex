@@ -21,7 +21,7 @@ v_g=\frac{v_r+v_l}{2}\\
 \end{cases}
 \end{equation}
 
-\section{Déplacement sans obstacles}
+\section{Déplacement sans obstacles\label{sec:noObstacles}}
 
 A partir de cette loi des vitesses, il est aisé de construire un algorithme permettant à un robot de converger vers sont but selon une trajectoire souple et à vitesse constante.
 
@@ -114,7 +114,7 @@ Dans notre projet nous avons choisi
 
 Où $ 1 \leq dir \leq 12 $ est la direction de l'obstacle perçu le plus proche et \hbox{$0 \leq prox \leq 1$} donne la proximité de cette obstacle. Comme présenté plus haut, ce sont les deux informations dont on dispose si l'on utilise le capteur de proximité.  \(1 \leq \alpha \leq 12 \) est un paramètre qui fixe l'influence de la direction de l'obstacle le plus proche et \(0 \leq \beta \) fixe l'influence de la proximité de cette obstacle. Cet évitement est partiellement tiré des exemples fourni sur le site du cours présentant ARGoS.~\cite{argosSite1}
 
-\section{Evitement intermédiaire}
+\section{Evitement intermédiaire\label{sec:mediAvoid}}
 
 Additionnellement, il est possible d'utiliser le capteur \emph{short range} du \emph{distance scanner} pour que le robot puisse déjà commencer à dévier sa trajectoire s'il détecte des obstacles proche de moins de 30cm~\cite{argosSite1}. Ceci permet de déclencher plus tôt le même évitement aux constantes numériques près (évitement moins brusque) que ci-dessus. Cet évitement est beaucoup plus sûr que le premier évitement présenté, tout en étant forcément plus souple que l'évitement <<d'urgence>> précédent.
 
@@ -310,7 +310,7 @@ function emergencyAvoidance(emerProx,emerDir)
 end
   \end{lstlisting}
 
-\appsec{Ajout d'une composante aléatoire à l'évitement}
+\appsec{Ajout d'une composante aléatoire à l'évitement \label{appsec:randomAvoidance}}
 
 Le déplacement présenté jusqu'à présent est purement déterministe. Dans un système multi-agents où tous les agents suivent le même comportement déterministe, un phénomène peut apparaître où après une première collision, les collisions se répètent un grand nombre de fois, puisqu'après la première rencontre les deux agents impliqués suivent exactement le même comportement avec des conditions initiales proches (au moment de la collision). Ici, collision est à prendre au sens large puisque ce phénomène est par exemple présent dans les protocoles de télécommunication.
 

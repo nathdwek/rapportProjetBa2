@@ -1,8 +1,11 @@
+Le comportement créé permet de remplir tous les objectifs énoncés par le cahier des charges, à savoir l'exploration d'un environnement inconnu dans le but d'y repérer des <<sources>> marquées par des taches noires au sol et l'exploitation de ces sources, tout en évitant les obstacles éventuels et en gérant adéquatement l'autonomie des robots. De plus, l'arène a aussi dû être créée afin de convenir à l'expérience ainsi qu'aux spécifications données. Enfin, comme demandé, une évaluation des performances du comportement a été faite. Cette évaluation est présentée ci-dessous.
+
 \section{Evaluation des performances}
 
 \section{Perspectives d'amélioration}
 
 \subsection{Optimisation des constantes utilisées}
+Tout au long de ce rapport, différents paramètres numériques ont été mis en avant et le comportement Lua a aussi été écrit de manière à ce que ces valeurs soient facilement accessibles. Il en résulte un ensemble de variables globales qui régissent toutes un aspect du comportement du robot dans l'expérience.
 
 \begin{lstlisting}[caption=Définitions des variables globales]
 --Specs received
@@ -40,3 +43,10 @@ IDEAL_NEST_BATT=20
 EPSILONGREED=0.1
 --epsilon for epsilon-greedy choice algorithm
 \end{lstlisting}
+
+L'étape suivante consisterait à trouver une combinaison de ces variables qui maximise la performance des robots. Ceci est bien évidemment une problématique très vaste, d'une part parce que cette combinaison optimale de valeurs dépend de la manière dont la performance est mesurée et de la configuration d'expérience utilisée, et d'autre part parce que le nombre de ces variables est trop déraisonnablement élevé pour se lancer dans une telle optimisation sans d'abord essayer de simplifier le problème. Dans cette section, nous allons brièvement rappeler les paramètres qui sont apparus, montrer quelles sont les constantes qui jouent les rôles les plus importants et quelles possibilités immédiates d'adaptation notre comportement offre à travers la modification de ces variables globales.
+
+Les constantes sont réparties en trois groupes: les constantes <<bas-niveau>>, les constantes utilisées par les différents algorithmes de déplacement, et les constantes <<haut-niveau>> qui interviennent dans la prise de décision. Parmi les constantes <<bas-niveau>>, on trouve la vitesse angulaire du \emph{distance scanner}, le nombre de directions dans lesquelles les mesures de ce capteur sont regroupées ainsi que la convergence $\kappa$ utilisée dans l'exploration\footnote{voir \ref{sec:noObstacles} et le listing \ref{list:gaslike}.}. Ces constantes jouent un rôle extrèmement mineur et sont plutôt liées à la physique des footbots.
+
+Dans les constantes liées au mouvement, on retrouve la convergence $\kappa$ utilisée dans l'exploitation ainsi que les deux paires de paramètres $\alpha$ et $\beta$ qui sont apparus dans l'évitement d'obstacles proches en \ref{sec:emerAvoid} et l'évitement intermédiaire en \ref{sec:mediAvoid}\footnote{Pour rappel, ces deux évitements sont les mêmes aux constantes et à la portée des capteurs utilisés près}. On retrouve aussi les paramètres utilisés pour introduire une composante aléatoire à l'évitement dans l'annexe \ref{appsec:randomAvoidance}.
+

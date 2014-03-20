@@ -67,15 +67,7 @@ Ce choix est important: il est possible d'augmenter l'efficacité de l'exploitat
 \end{algorithmic}
 \end{algorithm}
 
-Il est en fait plus sensé de mettre à jour l'indice de qualité non pas après un simple aller, mais après un aller-retour complet. Cependant, ceci aurait été plus difficile à mettre en pratique dans notre cas, et nous avons donc choisi la solution présentée ci-dessus. Pour réévaluer le score d'une source, le pourcentage de batterie restant à ce moment est utilisé, ce qui indique directement le temps mis par le robot pour atteindre la source. Le nouveau score de qualité est donné par
-\[newScore(battery, oldScore)=
-  \begin{cases}
-      oldScore+(1-oldScore) \times \frac{battery}{100} & \text{si }battery \geq \gamma\\
-      oldScore-oldScore \times \frac{100-battery}{100} & \text{si } battery \leq \beta\\
-  \end{cases}
-\]
-
-Où $0<\boldsymbol{\beta}<\gamma$ indique le niveau maximum de batterie à l'arrivée pour qu'une source soit considérée comme très peu rentable et $\beta<\boldsymbol{\gamma}<100$ indique le niveau minimum pour qu'une source soit considérée comme très rentable. Ceci permet une bonne convergence tout en gardant l'indice de qualité dans l'intervalle $[0,1]$.
+Il est en fait plus sensé de mettre à jour l'indice de qualité non pas après un simple aller, mais après un aller-retour complet. Cependant, ceci aurait été plus difficile à mettre en pratique dans notre cas, et nous avons donc choisi la solution présentée ci-dessus. Le nouveau score de qualité est simplement donné par le nombre de trajets faits vers une source divisé par la quantité totale de batterie dépensée pour faire ces trajets.
 
 L'utilisation d'une décision $\varepsilon$-greedy nécessitant déjà de trouver le meilleur indice de qualité, une amélioration possible serait de donner la possibilité au footbot de repasser dans l'état \emph{explore} si le meilleur score dans la liste passe en dessous d'une certaine valeur critique. Cependant, il faudrait alors aussi permettre au footbot de changer d'état dans l'autre sens à d'autres occasions que seulement s'il trouve ou reçoit une nouvelle source, comme il a été évoqué dans la section \ref{sec:explore}.
 
@@ -194,9 +186,6 @@ function doCommon()
     BASE_SPEED=0
     logerr("batt empty")
   end
-  if currentStep%5000==0 then
-    log(travels)
-  end
   return obstacleProximity, obstacleDirection,
          onSource, foundSource, backHome,
          gotSource, emerProx, emerDir
@@ -207,26 +196,28 @@ end
 
 \begin{lstlisting}[caption=fonction checkGoalReached]
 function checkGoalReached()
-  local foundSource, onSource, backHome=false,false,false
-  local insideBlack, seeBlack = floorIsBlack()
-  if seeBlack and math.sqrt((posX)^2+(posY)^2)>=90 then
-    if insideBlack and sourceIsOriginal(posX,posY, ressources) then
-      ressources[#ressources+1]={posX,posY,score=.5}
-      --store source. Initial quality index = 1/2
-      foundSource=true
-    end
-    onSource=true
-  elseif seeBlack and math.sqrt((posX)^2+(posY)^2)<=70 then
-    if goalX==0 and goalY==0 then
-      backHome=true
-    end
-    if backForBattery then
-      batterySecurity=updateBattCoeff(battery,batterySecurity)
-      backForBattery=false
-    end
-    battery=100
-  end
-  return onSource, foundSource, backHome
+   local foundSource, onSource, backHome=false,false,false
+   local insideBlack, seeBlack = floorIsBlack()
+   if seeBlack and math.sqrt((posX)^2+(posY)^2)>=90 then
+      if insideBlack and sourceIsOriginal(posX,posY, ressources) then
+         ressources[#ressources+1]={math.floor(posX),math.floor(posY),
+                                      score=1, travels=0,bSpent=0}
+         --store source. Initial score=1 which is way above average
+         --(Forces footbots to try new sources out)
+         foundSource=true
+      end
+      onSource=true
+   elseif seeBlack and math.sqrt((posX)^2+(posY)^2)<=70 then
+      if goalX==0 and goalY==0 then
+         backHome=true
+      end
+      if backForBattery then
+         batterySecurity=updateBattCoeff(battery,batterySecurity)
+         backForBattery=false
+      end
+      battery=100
+   end
+   return onSource, foundSource, backHome
 end
 \end{lstlisting}
 
@@ -286,7 +277,7 @@ end
 \end{lstlisting}
 
 
-\begin{lstlisting}[caption=Déplacement \emph{gaslike}]
+\begin{lstlisting}[caption=Déplacement \emph{gaslike}, label=list:gaslike]
 function gasLike(obstacleProximity, obstacleDirection)
   local goalAngle
   if obstacleProximity < 30
@@ -327,32 +318,24 @@ end
 \appsec[Implémentation du choix de ressource en Lua]{Implémentation du choix de ressource à exploiter en Lua\label{appsec:evalSource}}
 
 \begin{lstlisting}[caption=fonction doMine]
-function doMine(obstacleProximity, obstacleDirection,
-                onSource, backHome)
+function doMine(obstacleProximity, obstacleDirection, onSource, backHome)
    if onSource then
       if not hasMined then
-      --if we don't check for this
-      --then we reevaluate at every step
-      --spent on the source
+         ressources[sourceId].travels=ressources[sourceId].travels +1
+         travels=travels+1
          evalSource(sourceId, battery)
          goalX,goalY=0,0
       end
       hasMined=true
    elseif backHome then
-      sourceId,goalX,goalY=chooseNewSource(ressources)
       if hasMined then
-         travels=travels+1
          hasMined=false
       end
+      sourceId,goalX,goalY=chooseNewSource(ressources)
    elseif backForBattery then
       if goalX~=0 and goalY~=0 then
-      --if we don't check for this then
-      --we decrease the score at every step
-      --spent on the way back
          goalX,goalY=0,0
-         evalSource(sourceId, 30)
-         --decrease score by a big margin:
-         --we didn't even get to the source
+         evalSource(sourceId, 0)
       end
    end
    obstaclesTable = updateObstaclesTable("long_range",obstaclesTable)
@@ -361,47 +344,30 @@ end
 \end{lstlisting}
 
 \begin{lstlisting}[caption=Choix de la ressource à exploiter]
-function chooseNewSource(rscList)
+function chooseNewSource(rsc)
    local newSourceId
-   if #rscList>1 then
+   if #rsc>1 then
+      placeMaxAtOne(rsc)
       local pickBest=robot.random.uniform()
       if pickBest<(1-EPSILONGREED) then
-         newSourceId=1 --We know 1 is the index
-                       --of the best source
+         newSourceId=1
       else
-         newSourceId=robot.random.uniform_int(2,#rscList+1)
+         newSourceId=robot.random.uniform_int(2,#rsc+1)
       end
    else
       newSourceId=1
    end
-   local x=rscList[newSourceId][1]
-   local y=rscList[newSourceId][2]
-   return newSourceId,x, y
+   local x=rsc[newSourceId][1]
+   local y=rsc[newSourceId][2]
+   return newSourceId, x, y
 end
 \end{lstlisting}
 
 \begin{lstlisting}[caption=Evaluation de la qualité de la source]
 function evalSource(sourceId, battery)
-   local score=ressources[sourceId].score
-   if battery>GOOD_MINE_BATT then
-      score=score+(1-score)*battery/100
-      --Ensures quality score goes up while staying <1
-      if score>ressources[1].score then
-      --Check if source isn't the new best source
-         ressources[sourceId], ressources[1]=
-         ressources[1], ressources[sourceId]
-      end
-   elseif battery<BAD_MINE_BATT then
-      score=score-score*(100-battery)/100
-      --Ensures quality score goes down while staying >0
-      if sourceId==1 then --Check if source is still the best source
-         indexOtherMax=findIndexOtherMax(ressources)
-         if ressources[indexOtherMax].score>score then
-            ressources[indexOtherMax], ressources[1]=
-            ressources[1],ressources[indexOtherMax]
-         end
-      end
-   end
+   ressources[sourceId].bSpent=ressources[sourceId].bSpent+(100-battery)
+   ressources[sourceId].score=ressources[sourceId].travels
+                              /ressources[sourceId].bSpent
 end
 \end{lstlisting}
 
@@ -470,7 +436,9 @@ function listen()
       local source = sourceOut(robot.range_and_bearing[i].data)
       if sourceIsOriginal(source[1],source[2],ressources) then
       --Check for originality
-        source.score=.5
+        source.score=1
+        source.travels=0
+        source.bSpent=0
         ressources[#ressources+1]=source
         gotSource=true
       end
