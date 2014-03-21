@@ -1,0 +1,17 @@
+\subsection{Recherche du plus court chemin}
+
+\subsubsection{Algorithmes déterministes classiques}
+
+Dans le cas où les footbots disposent réellement d'une description complète de leur environnement, il est envisageable d'utiliser les algorithmes classiques de recherche du plus court chemin comme A* et Dijkstra. Ceux-ci fonctionnent en représentant l'environnement sous forme d'un graphe dont les n\oe{}uds représentent les positions accessibles et dont branchse associent à deux n\oe{}uds joignables le coût (ou la distance qui les sépare). Ces algorithmes associent à un chemin en cours d'évaluation un coût total et sélectionne au final le chemin au coût le moins élevé.
+
+Dijkstra évalue le coût du chemin courant en calculant simplement la somme des coûts depuis le n\oe{}ud initial. Pour cette raison, il ne privilégie a priori aucune direction d'exploration et son éxécution ne se termine que si tous les n\oe{}uds accessibles ont été évalués ou si le n\oe{}ud but a été <<visité>>\footnote{Dans le cas de Dijkstra, <<visité>> signifie que tous les n\oe{} adjacents ont été évalués.}.
+
+A* rajoute au coût <<connu>> du chemin reliant l'origine au n\oe{}ud courant l'évaluation heuristique du coût du chemin reliant le point courant au but. Ceci permet de guider la recherche et de l'arrêter plus tôt si on a confiance en l'heuristique utilisée.
+
+Les algorithmes classiques de recherche du chemin ne sont pas immédiatement adaptable à un environnement partiellement connu ou en cours d'exploration. Des alternatives existent cependant, parmi lesquelles l'utilisation de l'intelligence en essaim, qui s'inspire en partie  des comportement originaux et très efficaces déjà présents dans la nature.
+
+\subsubsection{Algorithmes issu de la swarm intelligence (?)}
+
+\cite{pheromonesForaging,antOpti} (Parce que la léchouille, c'est bien!)
+
+(Permettrait de parler de ce fameux algorithme des fourmis, avec un réel background et surtout une réelle application potentielle dans le projet)
