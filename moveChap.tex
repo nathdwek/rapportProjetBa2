@@ -145,19 +145,7 @@ Il est cependant possible d'améliorer cette solution en fonction de la connaiss
 \end{algorithmic}
 \end{algorithm}
 
-L'implémentation de l'algorithme de recherche du plus court chemin qui fournit intermediate goals list est un problème à part entière. Avant de l'examiner plus en détail, il faut noter que malgré l'utilisation d'une recherche du plus court chemin qui devrait a priori permettre d'éviter les obstacles, le test d'obstacle est toujours présent, ainsi que la possibilité d'évitement. Il est évident que ceci est fait pour permettre d'éviter des objets inattendus tels que d'autres robots, par exemple. Cependant, on peut dès lors se demander s'il ne faudrait pas aussi chercher de nouveau un plus court chemin après un évitement imprévu ou si le robot a dévié d'une distance significative de sa trajectoire prévue.
-
-\subsection{Recherche du plus court chemin}
-
-\subsubsection{Algorithmes déterministes classiques}
-
-Bernard a fourni du contenu mais il faut un peu voir à quel point on veut réécrire cette partie, sachant que ça n'a pas été utilisé dans le projet (Approche plus synthétique et globale)
-
-\subsubsection{Algorithmes issu de la swarm intelligence (?)}
-
-\cite{pheromonesForaging,antOpti} (Parce que la léchouille, c'est bien!)
-
-(Permettrait de parler de ce fameux algorithme des fourmis, avec un réel background et surtout une réelle application potentielle dans le projet)
+L'implémentation de l'algorithme de recherche du plus court chemin qui fournit intermediate goals list est un problème à part entière. Avant de l'examiner plus en détails dans le chapitre suivant, il faut noter que malgré l'utilisation d'une recherche du plus court chemin qui devrait a priori permettre d'éviter les obstacles, le test d'obstacle est toujours présent, ainsi que la possibilité d'évitement. Il est évident que ceci est fait pour permettre d'éviter des objets inattendus tels que d'autres robots, par exemple. Cependant, on peut dès lors se demander s'il ne faudrait pas aussi chercher de nouveau un plus court chemin après un évitement imprévu ou si le robot a dévié d'une distance significative de sa trajectoire prévue.
 
 \begin{subappendices}
   \appsec{Implémentation du déplacement en Lua}

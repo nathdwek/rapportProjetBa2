@@ -1,7 +1,13 @@
-PROBABLEMENT BESOIN D'UN PETIT PEU DE REECRITURE ICI
+Afin de mener à bien l'objectif énoncé dans l'introduction, les robots doivent se comporter de manière intelligente, et le choix de la bonne action est cruciale. Il est cependant délicat de définir une seule <<meilleure>> action. En effet, la rationalité d'un agent peut être difficile à mesurer. D'après \cite{AIBrique}:
+\begin{quote}
+  <<La rationalité n'est pas synonyme de perfection, la rationalité maximise la performance espérée tandis que la perfection maximise la performance réelle.>>
+\end{quote}
 
-Afin de mener à bien l'objectif énoncé dans l'introduction, les robots doivent se comporter de manière intelligente. Le plus important est l'interaction avec l'environnement. En effet, le choix de la bonne action est cruciale. Il est cependant délicat de définir une seule <<meilleure>> action. Ceci est développé plus bas, en introduisant le concept de \emph{rationalité}.
-De manière générale, un robot peut être assimilé à un agent qui reçoit des \emph{percepts} par l'intermédiaire de ses capteurs. L'\emph{agent} réagit alors en exerçant une action sur l'environnement grâce à ses \emph{effecteurs}.
+De plus, dans un système multi-agents, un choix d'action peut s'avérer bénéfique pour un agent mais mauvais pour l'ensemble du groupe. C'est pourquoi il est préférable de concevoir les mesures de performance en fonction de ce que l'on souhaite obtenir dans l'environnement et non en fonction de la façon dont devrait se comporter un agent.
+
+Pour prendre un point de vue plus <<haut niveau>> sur cette problématique, il est possible d'utiliser le concept de machine à état et de diagramme d'état pour décrire un comportement. L'agent commence dans un état initial et peut à partir de cet état accomplir un certain nombre d'actions qui l'amènent dans d'autres états, à partir desquels d'autres actions et transitions sont possibles, et ainsi de suite. Ceci définit l'espace des états du système, c'est à dire l'ensemble de tous les états accessibles par une séquence d'action à partir de l'état initial. Cet espace des états peut être vu comme un graphe ou les n\oe{}uds représentent les états et les branches les transitions. Il en découle la notion de chemin (et de coût associé) représentant une séquence d'états reliés par une séquence d'actions. Cette approche est utilisée dans la section \ref{sec:tree}.~\cite{foraging, AIBrique}
+
+D'autre part, un agent reçoit des \emph{percepts} par l'intermédiaire de ses capteurs. L'\emph{agent} réagit alors en exerçant une action sur l'environnement grâce à ses \emph{effecteurs}. Il est aussi possible de découper le comportement autour de ce cycle, et c'est ce qui est fait par ARGoS, nous y reviendrons longuement dans la suite.
 \begin{figure}[htb]
 \centering
 \begin{tikzpicture}[node distance = 2cm,>=stealth, auto]
@@ -15,37 +21,10 @@ De manière générale, un robot peut être assimilé à un agent qui reçoit de
   \path [line] (capteurs|-envir.south)-- node[yshift=1em, xshift=-2em,style={rectangle,fill=white}]{Percepts} (capteurs.north);
   \path [line] (actions.north)-- node[yshift=1em, xshift=2em,style={rectangle,fill=white}]{Actions} (actions|-envir.south);
   \begin{scope}[on background layer]
-  \node [draw=black, fill=green!20 ,fit= (actions) (decision) (decision') (capteurs)](agents){};%
+  \node [draw=black, fill=green!20 ,fit= (actions) (decision) (decision') (capteurs)](agents){};
   \node [yshift=-1em] at (agents.north) {\textsc{Agents}};
   \end{scope}
 \end{tikzpicture}
     \caption{Cycle d'interaction entre l'environnement et les agents}
 \end{figure}
-La description des différents capteurs et effecteurs du robot est faite dans le chapitre \ref{chap:argosFootbot}.
-
-La rationalité d'un agent peut être difficile à mesurer. D'après \cite{AIBrique}:
-\begin{quote}
-  <<La rationalité n'est pas synonyme de perfection, la rationalité maximise la performance espérée tandis que la perfection maximise la performance réelle.>>
-\end{quote}
-
-
-En effet, dans un groupe composé de plusieurs agents, un choix d'action peut s'avérer bénéfique pour un agent mais mauvais pour l'ensemble du groupe. C'est pourquoi il est préférable de concevoir les mesures de performance en fonction de ce que l'on souhaite obtenir dans l'environnement et non en fonction de la façon dont devrait se comporter un agent.
-
-A partir de cela, tout problème peut être formellement défini par cinq composantes. Tout d'abord l'état initial dans lequel commence l'agent, puis la description de ses différentes actions, c'est à dire toutes les actions possibles dans un état donné. Ensuite, vient le modèle de transition, il décrit ce que chaque action réalise. Ces trois premières composantes définissent l'espace des états du système, c'est à dire l'ensemble de tous les états accessibles par une séquence d'action à partir de l'état initial.
-
-Dès lors l'espace d'état peut être interprété sous forme d'arbre où les nœuds représentent des états et les branches des séquences d'action. Il en découle la notion de chemin représentant une séquence d'états reliés par une séquence d'action.
-
-La quatrième composante correspond au test but. Celle-ci détermine si un état donné est un état but. Enfin vient la cinquième et dernière composante, le coût du chemin. Elle permet d'attribuer une valeur numérique à un chemin en accord avec la mesure de performance imposée.
-
-Maintenant qu'une présentation générale de l'intelligence artificielle a été faite, le comportement d'essaim d'agents intelligents peut être étudié. Pour ce faire, il s'est avéré très intéressant d'en comprendre le comportement à partir d'exemples se trouvant dans la nature. Les fourmis et les abeilles illustrent bien cela. Deux algorithmes mettant en avant leur comportement sont présentés ci-dessous.
-
-\section{Algorithme des fourmis}
-
-TODO/TO RETHINK +CF SECTION 4.6.2
-
-OLD:
-Cet algorithme est basé sur le comportement des fourmis dont une des particularités est la communication au travers de l'environnement par dépôts de phéromones.
-
-L'algorithme se présente de la manière suivante. Pour commencer, une exploration de l'environnement est faite par les fourmis. Si l'une d'entre elles trouve une source, elle déposera, lors de son retour au nid, des phéromones tout au long du chemin qu'elle emprunte. Dès lors, lorsque que d'autres fourmis partiront à la recherche de nourriture, elles auront tendance à suivre le chemin  marqué de phéromones. Et à leur retour à la colonie, elles renforceront cette piste.
-
-Cet algorithme illustre une communication indirecte d'un essaim et la manière dont ce dernier est influencé \cite{antOpti}. L'autre algorithme, illustrant le comportement d'une structure organisée, est l'algorithme des abeilles.
+La description des différents capteurs et effecteurs des footbots, ainsi que celle de l'environnement et des outils utilisés pour le représenter est faite dans le chapitre suivant.
