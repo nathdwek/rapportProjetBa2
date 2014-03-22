@@ -42,4 +42,20 @@ end
 
 \section{Configuration de l'arène et de l'expérience}
 
-Rien reçu de Sacha pour l'instant
+L'arène a aussi dû être créée par le groupe selon les spécifications données:
+\begin{itemize}
+  \item L'arène est carrée de côté 10m
+  \item Le nid et les sources font 50cm de rayon
+  \item L'arène comporte éventuellement des obstacles
+  \item Les robots ont une batterie de 100 et perdent 0.2 par pas\footnote{Ceci impose une vitesse $>25cms^{-1}$ afin que les foobots puissent raisonnablement faire des allers-retours vers les coins de l'arène, ce qui est largement supérieur à la vitesse de $10cms^{-1}$ utilisée dans des travaux précédents \cite{foraging, pheromonesForaging}.}
+  \item Les robots récupèrent leur batterie en passant par le nid
+\end{itemize}
+
+L'arène utilisée comporte entre 50 et 100 obstacles cylindriques de 10cm de rayon disposés au hasard. Différentes répartitions de ressources ont été envisagées. De plus, un script python a été utilisé pour mettre en place aléatoirement de nombreuses expériences et automatiser la collecte de données. Une configuration initiale typique est montrée à la figure \ref{fig:initArena}.
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=0.8\textwidth]{pics/initArena.png}
+  \caption{Exemple de configuration initiale\label{fig:initArena}}
+\end{figure}
+
+
