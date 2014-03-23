@@ -118,9 +118,15 @@ L'implémentation en Lua de la communication est détaillée dans l'annexe \ref{
 
 \subsection{Gestion de l'autonomie}
 
-L'autonomie limitée des footbots impose aux footbots de revenir au nid à intervalles réguliers. Ceci est immédiat à implémenter, à l'exception de la problématique principale: quel indicateur utiliser pour effectuer la décision de rentrer au nid.
+L'autonomie limitée des footbots impose aux footbots de revenir au nid à intervalles réguliers. Ceci est immédiat à implémenter, à l'exception de la problématique principale: quel indicateur utiliser pour effectuer la décision de rentrer au nid. Dans notre projet, les footbots rentrent au nid dès qu'ils estiment ne plus avoir assez de batterie pour pouvoir continuer à s'éloigner du nid sans risques. Pour ce faire, nous évaluons simplement la quantité de batterie nécessaire pour rentrer à vol d'oiseau, munie de deux coefficients de sécurité: un coefficient multiplicatif et une réserve de batterie que le robot doit avoir lorsqu'il est de retour au nid. L'indicateur utilisé est donc:
+\[
+  \mu_{scrity} \times batt_{step} \times \frac{\sqrt{x^2+y^2}}{speed}=\delta_{scrity}
+\]
 
-TODOOOOOOOOOOOOOOO
+Afin que les footbots puissent s'adapter à l'environnement dans lequel il sont placé, $\mu_{scrity}$ est constamment réévalué durant l'expérience: à la baisse si le footbot a atteint le nid avec un surplus de batterie $>\delta_{scrity}$ et à la hausse si le surplus $<\delta_{scrity}$.
+L'implémentation en Lua de la gestion de l'autonomie est détaillée dans l'annexe \ref{appsec:battery}.
+
+
 
 \section{Retour sur le comportement général\label{sec:tree}}
 
@@ -179,7 +185,7 @@ function doCommon()
                    or battery-batterySecurity
                               *BATT_BY_STEP
                               *math.sqrt(posX^2+posY^2)
-                              /BASE_SPEED<10
+                              /BASE_SPEED<IDEAL_NEST_BATT
 
   emerProx, emerDir=readProxSensor()
   if battery==0 then
@@ -251,7 +257,7 @@ function sourceIsOriginal(x, y, rsc)
 end
 \end{lstlisting}
 
-\appsec{Implémentation du modèle de diffusion en Lua\label{appsec:gasLike}}
+\appsec{Implémentation de la marche d'exploration en Lua\label{appsec:gasLike}}
 
 \begin{lstlisting}[caption=fonction doExplore]
 function doExplore(obstacleProximity, obstacleDirection,
@@ -370,6 +376,48 @@ function evalSource(sourceId, battery)
                               /ressources[sourceId].bSpent
 end
 \end{lstlisting}
+
+\appsec{Implémentation en Lua de la gestion de l'autonomie\label{appsec:battery}}
+\begin{lstlisting}[caption=appel par doCommon]
+function doCommon()
+  ...
+  battery=battery-BATT_BY_STEP
+  backForBattery = backForBattery
+                   or battery-batterySecurity
+                              *BATT_BY_STEP
+                              *math.sqrt(posX^2+posY^2)
+                              /BASE_SPEED<IDEAL_NEST_BATT
+  --We use the "or" so that backForBattery stays true once
+  --it has been triggered. Only checkGoalReached can set
+  --it back to false
+  ...
+end
+\end{lstlisting}
+
+\begin{lstlisting}[caption=Réévaluation de batterySecurity]
+function checkGoalReached()
+  ...
+  elseif seeBlack and math.sqrt((posX)^2+(posY)^2)<=70 then
+  ... --You're back in the nest
+    if backForBattery then
+      batterySecurity=updateBattCoeff(battery,batterySecurity)
+      backForBattery=false
+    end
+    battery=100
+  end
+  ...
+end
+
+function updateBattCoeff(battery, batterySecurity)
+  if battery>IDEAL_NEST_BATT then
+    batterySecurity=batterySecurity-(battery-IDEAL_NEST_BATT)*.07
+  else
+    batterySecurity=batterySecurity-(battery-IDEAL_NEST_BATT)*.1
+  end
+  return batterySecurity
+end
+\end{lstlisting}
+
 
 \appsec{Implémentation en Lua de la communication\label{appsec:commu}}
 
