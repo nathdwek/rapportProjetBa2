@@ -1,6 +1,6 @@
 \section{Capteurs et actuateurs des footbots}
 
-Comme présenté plus haut, les capteurs et actuateurs des agents déterminent bien évidemment les informations qu'ils sont capables de recuellir et les actions qu'ils peuvent effectuer.
+Comme présenté plus haut, les capteurs et actuateurs des agents déterminent bien évidemment les informations qu'ils sont capables de recueillir et les actions qu'ils peuvent effectuer.
 
 \begin{figure}[htb]
   \centering
@@ -15,7 +15,7 @@ Comme annoncé dans l'introduction, l'essaim de robots devra être simulé dans 
 
 \section{Choix du langage informatique}
 
-D'une part, les principaux avantages de C++, sa rapidité d'exécution et ses nombreuses librairies nottament, ne sont pas primordiaux dans le cadre de ce projet. De plus, il nous est moins familier que Lua qui se rapproche fortement de python tant au niveau de la syntaxe que de l'approche fonctionnelle.
+D'une part, les principaux avantages de C++, sa rapidité d'exécution et ses nombreuses librairies notamment, ne sont pas primordiaux dans le cadre de ce projet. De plus, il nous est moins familier que Lua qui se rapproche fortement de python tant au niveau de la syntaxe que de l'approche fonctionnelle.
 
 Lua étant un langage de scripting, il est plus adapté aux besoins du groupe car la réalisation du projet passe par de nombreuses petites expérimentations mais ne devrait pas aboutir à un comportement final comportant de très nombreuses lignes de code. En effet, ce type de langage permet de concevoir des prototypes de programmes rapidement.
 
@@ -25,7 +25,7 @@ Au vu des raisons énoncées ci-dessus, Lua a été choisi comme langage de prog
 
 \section{Structure d'un comportement en Lua}
 
-Le template de code fourni par ARGoS présenté plus bas montre les deux fonctions les plus importantes parmi les fonctions que le simulateur doit absolument trouver dans le comportement. La fonction \emph{init} qui est éxécutée une fois par chaque footbot au début de l'expérience, et la fonction \emph{step} qui est éxécutée par chaque footbot à chaque pas de la simulation. C'est bien évidemment cette fonction \emph{step} qui représente presqu'entièrement le comportement du robot. Deux types d'évènements peuvent modifier la façon dont cette fonction step s'éxécute: d'une part, les percepts ayant lieu au cours du pas de simulation, et d'autre part un ensemble de variables globales (qui survivent après l'éxécution de la fonction \emph{step} et sont donc accessibles par les instances suivante de cette fonction) qui détermine entièrement l'état du robot lorsque celui-ci entame ce pas de simulation. Enfin, la fonction step peut agir en retour sur ces variables d'état.~\cite{argosSite1}
+Le template de code fourni par ARGoS présenté plus bas montre les deux fonctions les plus importantes parmi les fonctions que le simulateur doit absolument trouver dans le comportement. La fonction \emph{init} qui est exécutée une fois par chaque footbot au début de l'expérience, et la fonction \emph{step} qui est exécutée par chaque footbot à chaque pas de la simulation. C'est bien évidemment cette fonction \emph{step} qui représente presqu'entièrement le comportement du robot. Deux types d'évènements peuvent modifier la façon dont cette fonction step s'exécute: d'une part, les percepts ayant lieu au cours du pas de simulation, et d'autre part un ensemble de variables globales (qui survivent après l'exécution de la fonction \emph{step} et sont donc accessibles par les instances suivante de cette fonction) qui détermine entièrement l'état du robot lorsque celui-ci entame ce pas de simulation. Enfin, la fonction step peut agir en retour sur ces variables d'état.~\cite{argosSite1}
 \begin{lstlisting}[caption=Structure de base d'un comportement en Lua]
 --[[ This function is executed every time
      you press the 'execute' button ]]
@@ -54,7 +54,7 @@ L'arène a aussi dû être créée par le groupe selon les spécifications donn�
 L'arène utilisée comporte entre 50 et 100 obstacles cylindriques de 10cm de rayon disposés au hasard. Différentes répartitions de ressources ont été envisagées. De plus, un script python a été utilisé pour mettre en place aléatoirement de nombreuses expériences et automatiser la collecte de données. Une configuration initiale typique est montrée à la figure \ref{fig:initArena}.
 \begin{figure}[htb]
   \centering
-  \includegraphics[width=0.8\textwidth]{pics/initArena.png}
+  \includegraphics[width=0.9\textwidth]{pics/initArena.png}
   \caption{Exemple de configuration initiale\label{fig:initArena}}
 \end{figure}
 

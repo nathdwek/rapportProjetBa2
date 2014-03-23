@@ -40,7 +40,7 @@ L'implémentation détaillée de la fonction doCommon est donnée dans l'annexe 
 
 Tous les robots sont initialisés dans l'état \emph{explore}. Dans cet état, ils se déplacent selon une méthode d'exploration donnée jusqu'à recevoir le signal \emph{foundSource} ou \emph{gotSource}. Le premier signal signifie que le footbot a lui-même trouvé une nouvelle source, tandis que le second signal indique qu'une nouvelle source lui a été transmise. C'est la fonction \emph{doCommon} qui s'assure qu'une source potentielle est effectivement originale et la stocke alors dans la liste des sources connues. Cette liste est partagée avec les autres robots (voir section \ref{sec:commu}) et utilisée lorsque le robot est dans l'état \emph{exploite}.
 
-Dans le cas où le robot a trouvé une source, il passe directement dans l'état exploite. Par contre, dans le cas où le robot reçu une nouvelle source, il décide aléatoirement s'il continue à explorer ou s'il se met à exploiter la ou les ressources qu'il connaît. La diffusion de l'information entre robots que nous avons mis en place étant très rapide, ceci permet d'éviter que tous les robots se contentent d'une unique source dès qu'un seul individu en a fait la découverte. Une amélioration possible serait de permettre au robot de passer de l'état \emph{explore} à l'état \emph{exploite} même en l'absence de découverte originale s'il estime avoir déjà passé trop de temps à explorer.
+Dans le cas où le robot a trouvé une source, il passe directement dans l'état exploite. Par contre, dans le cas où le robot a reçu une nouvelle source, il décide aléatoirement s'il continue à explorer ou s'il se met à exploiter la ou les ressources qu'il connaît. La diffusion de l'information entre robots que nous avons mis en place étant très rapide, ceci permet d'éviter que tous les robots se contentent d'une unique source dès qu'un seul individu en a fait la découverte. Une amélioration possible serait de permettre au robot de passer de l'état \emph{explore} à l'état \emph{exploite} même en l'absence de découverte originale s'il estime avoir déjà passé trop de temps à explorer.
 
 Le parcours d'exploration pris par le robot est une composante importante et complexe de l'efficacité de la phase d'exploration. Des travaux précédents montrent cependant qu'une marche aléatoire (voir \cite{foraging} par exemple où la marche d'exploration est décrite en détail) peut suffire lorsque le nombre de robots est assez élevés, et leurs interactions suffisament développées. Nous nous limitons donc à un simple modèle de diffusion: les robots se déplacent en ligne droite et rebondissent sur tous les obstacles qu'ils rencontrent à la manière de simples particules. Ceci permet d'assurer que les robots migrent des zones les plus concentrées en footbots vers les zones les moins concentrées et que, plus globalement, les robots occupent tout l'espace disponible.
 
@@ -52,7 +52,7 @@ L'implémentation du modèle de diffusion est détaillée en annexe \ref{appsec:
 
 Une fois passé dans l'état \emph{exploite}, le footbot fait simplement des allers-retours entre une des ressources connues et le nid en utilisant les méthodes de déplacement développées au chapitre \ref{chap:move}. Les opérations communes ont toujours lieu et le footbot continue donc à communiquer avec les autres robots et à lire la couleur du sol. Il reste donc à traiter du choix de la source à exploiter.
 
-Ce choix est important: il est possible d'augmenter l'efficacité de l'exploitation en incitant les robots à exploiter les sources fournissant le meilleur rendement. Différentes méthodes peuvent être utilisés à cet effet, nous utilisons l'algorithme $\varepsilon$-greedy car il est simple, compréhensible, et utilise une seule variable qui représente directement le degré d'exploration~\cite{foraging}. Cet algorithme sélectionne avec une probabilité $1-\varepsilon$ la source au meilleur rendement et avec une probabilité $\varepsilon$ une source au hasard parmi les sources moins rentables. Pour ce faire, nous devons aussi mettre en place un indice de qualité pour chaque source, qui est réévalué à chaque trajet:
+Ce choix est important: il est possible d'augmenter l'efficacité de l'exploitation en incitant les robots à exploiter les sources fournissant le meilleur rendement. Différentes méthodes peuvent être utilisées à cet effet, nous utilisons l'algorithme $\varepsilon$-greedy car il est simple, compréhensible, et utilise une seule variable qui représente directement le degré d'exploration~\cite{foraging}. Cet algorithme sélectionne avec une probabilité $1-\varepsilon$ la source au meilleur rendement et avec une probabilité $\varepsilon$ une source au hasard parmi les sources moins rentables. Pour ce faire, nous devons pour chaque source mettre en place un indice de qualité qui est réévalué à chaque trajet:
 
 \begin{algorithm}[H]
 \caption{Mise en place d'un score de qualité des sources}
@@ -69,7 +69,7 @@ Ce choix est important: il est possible d'augmenter l'efficacité de l'exploitat
 
 Il est en fait plus sensé de mettre à jour l'indice de qualité non pas après un simple aller, mais après un aller-retour complet. Cependant, ceci aurait été plus difficile à mettre en pratique dans notre cas, et nous avons donc choisi la solution présentée ci-dessus. Le score de qualité est simplement donné par le nombre de trajets faits vers une source divisé par la quantité totale de batterie dépensée pour faire ces trajets.
 
-L'utilisation d'une décision $\varepsilon$-greedy nécessitant déjà de trouver le meilleur indice de qualité, une amélioration possible serait de donner la possibilité au footbot de repasser dans l'état \emph{explore} si le meilleur score dans la liste passe en dessous d'une certaine valeur critique. Cependant, il faudrait alors aussi permettre au footbot de changer d'état dans l'autre sens à d'autres occasions que seulement s'il trouve ou reçoit une nouvelle source, comme il a été évoqué dans la section \ref{sec:explore}.
+L'utilisation d'une décision $\varepsilon$-greedy nécessitant déjà de trouver le meilleur indice de qualité, une amélioration possible serait de donner la possibilité au footbot de repasser dans l'état \emph{explore} si le meilleur score dans la liste passe en dessous d'une certaine valeur critique. Cependant, il faudrait alors aussi permettre au footbot de changer d'état dans l'autre sens à d'autres occasions et pas uniquement s'il trouve ou reçoit une nouvelle source, comme il a été évoqué dans la section \ref{sec:explore}.
 
 L'implémentation détaillée de l'évaluation et du choix des ressources est présentée dans l'annexe \ref{appsec:evalSource}.
 
@@ -118,12 +118,12 @@ L'implémentation en Lua de la communication est détaillée dans l'annexe \ref{
 
 \subsection{Gestion de l'autonomie}
 
-L'autonomie limitée des footbots impose aux footbots de revenir au nid à intervalles réguliers. Ceci est immédiat à implémenter, à l'exception de la problématique principale: quel indicateur utiliser pour effectuer la décision de rentrer au nid. Dans notre projet, les footbots rentrent au nid dès qu'ils estiment ne plus avoir assez de batterie pour pouvoir continuer à s'éloigner du nid sans risques. Pour ce faire, nous évaluons simplement la quantité de batterie nécessaire pour rentrer à vol d'oiseau, munie de deux coefficients de sécurité: un coefficient multiplicatif et une réserve de batterie que le robot doit avoir lorsqu'il est de retour au nid. L'indicateur utilisé est donc:
+L'autonomie limitée des footbots leur impose de revenir au nid à intervalles réguliers. Ceci est immédiat à implémenter, à l'exception de la problématique principale: quel indicateur utiliser pour décider de rentrer au nid. Dans notre projet, les footbots rentrent au nid dès qu'ils estiment ne plus avoir assez de batterie pour pouvoir continuer à s'éloigner du nid sans risque. Pour ce faire, nous évaluons simplement la quantité de batterie nécessaire pour rentrer à vol d'oiseau, munie de deux coefficients de sécurité: un coefficient multiplicatif et une réserve de batterie que le robot doit avoir lorsqu'il est de retour au nid. L'indicateur utilisé est donc:
 \[
   \mu_{scrity} \times batt_{step} \times \frac{\sqrt{x^2+y^2}}{speed}=\delta_{scrity}
 \]
 
-Afin que les footbots puissent s'adapter à l'environnement dans lequel il sont placé, $\mu_{scrity}$ est constamment réévalué durant l'expérience: à la baisse si le footbot a atteint le nid avec un surplus de batterie $>\delta_{scrity}$ et à la hausse si le surplus $<\delta_{scrity}$.
+Afin que les footbots puissent s'adapter à l'environnement dans lequel ils sont placés, $\mu_{scrity}$ est constamment réévalué durant l'expérience: à la baisse si un footbot a atteint le nid avec un surplus de batterie $>\delta_{scrity}$ et à la hausse si le surplus $<\delta_{scrity}$.
 L'implémentation en Lua de la gestion de l'autonomie est détaillée dans l'annexe \ref{appsec:battery}.
 
 
@@ -156,7 +156,7 @@ Pour conclure ce chapitre, reprenons un point de vue plus large sur le comportem
 \caption{Comportement haut niveau de chaque robot~\cite{foraging}.\label{fig:genFlowchart}}
 \end{figure}
 
-Il s'agit maintenant de mettre ce comportement à l'épreuve, d'évaluer ses performances, d'examiner quelles possibilités d'optimisation et d'adaptation sont déjà offertes et d'identifier les défauts plus fondamentaux qui sonts présents.
+Il s'agit maintenant de mettre ce comportement à l'épreuve, d'évaluer ses performances, d'examiner quelles possibilités d'optimisation et d'adaptation sont déjà offertes et d'identifier les défauts plus fondamentaux qui sont présents.
 
 \begin{subappendices}
   \appsec{Implémentation des opérations communes en Lua\label{appsec:doCommon}}
@@ -379,7 +379,7 @@ function evalSource(sourceId, battery)
 end
 \end{lstlisting}
 
-\appsec{Implémentation en Lua de la communication\label{appsec:commu}}
+\appsec{Implémentation de la communication en Lua\label{appsec:commu}}
 
 \subsection{Envoi de message}
 
@@ -473,7 +473,7 @@ end
 
 \end{subappendices}
 
-\appsec{Implémentation en Lua de la gestion de l'autonomie\label{appsec:battery}}
+\appsec{Implémentation de la gestion de l'autonomie en Lua\label{appsec:battery}}
 \begin{lstlisting}[caption=appel par doCommon]
 function doCommon()
   ...
