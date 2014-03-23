@@ -143,8 +143,166 @@ ytick={10,20,30},
 
 \subsection{Performances Générales}
 
+\begin{figure}[htbp]
+\centering
+\begin{subfigure}[h!]{0.45\textwidth}
+\begin{tikzpicture}
+        \begin{axis}[width=\textwidth,
+            symbolic x coords={A,B,C},
+            xtick=data,
+            ymin=0,
+            ymax=110,
+            xlabel=Source,
+            ylabel=Trajets,
+            ytick={25,50,75,100},
+                  axis x line=bottom,
+      axis y line=left,
+      enlarge x limits=0.2,
+          ]
+            \addplot[ybar,fill=black!25] coordinates {
+                (A,   100)
+                (B,  17)
+                (C,   4)
+            };
+        \end{axis}
+\end{tikzpicture}
+\caption{5 footbots}
+\end{subfigure}\hfill\begin{subfigure}[h!]{0.45\textwidth}
+\begin{tikzpicture}
+\begin{axis}[width=\textwidth,
+symbolic x coords={A,B,C},
+xtick=data,
+ymin=0,
+ymax=130,
+xlabel=Source,
+ylabel=Trajets,
+ytick={20,40,60,80,100,120},
+      axis x line=bottom,
+      axis y line=left,
+            enlarge x limits=0.2,
+]
+\addplot[ybar,fill=black!25] coordinates {
+(A,   118)
+(B,  22)
+(C,   18)
+};
+\end{axis}
+\end{tikzpicture}
+\caption{10 footbots}
+\end{subfigure}
+
+\vspace{1em}
+
+\begin{subfigure}[htbp]{0.45\textwidth}
+\begin{tikzpicture}
+\begin{axis}[width=\textwidth,
+symbolic x coords={A,B,C},
+xtick=data,
+xlabel=Source,
+ylabel=Trajets,
+ymin=0,
+ymax=130,
+ytick={30,60,90,120},
+      axis x line=bottom,
+      axis y line=left,
+            enlarge x limits=0.2,
+]
+\addplot[ybar,fill=black!25] coordinates {
+(A,   122)
+(B,  30)
+(C,   23)
+};
+\end{axis}
+\end{tikzpicture}
+\subcaption{15 footbots}
+\end{subfigure}
+\caption{Nombre de trajets effectués par source au bout de 10.000 steps, selon le nombre de robots}
+\end{figure}
+
+\begin{figure}[htbp]
+\begin{minipage}{\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=0.55\textwidth,
+symbolic x coords={5,10,15},
+xtick=data,
+xlabel=Nombre de footbots,
+ylabel=Nombre de sources trouvées,
+ymin=0,
+ymax=4.2,
+ytick={1,2,3,4},
+      axis x line=bottom,
+      axis y line=left,
+            enlarge x limits=0.2,
+]
+\addplot[ybar,fill=black!25] coordinates {
+(5,   1.7)
+(10,  2.1)
+(15,  2.6)
+};
+\end{axis}
+\end{tikzpicture}
+\caption[Nombre moyen de source trouvées après 10.000 steps, selon le nombre de robots]{Nombre moyens de source trouvées après 10.000 steps, selon le nombre de robots\footnote{Les footbots peuvent trouver deux sources <<différentes>> sur la même tache réelle si ces sources sont assez espacées (voir \ref{lst:isorgn})}}
+\end{minipage}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=0.55\textwidth,
+symbolic x coords={5,10,15},
+xtick=data,
+xlabel=Nombre de footbots,
+ylabel=Pourcentage continuant à explorer,
+ymin=0,
+ymax=22,
+ytick={5,10,15,20},
+      axis x line=bottom,
+      axis y line=left,
+            enlarge x limits=0.2,
+]
+\addplot[ybar,fill=black!25] coordinates {
+(5,   17)
+(10,  11)
+(15,  8)
+};
+\end{axis}
+\end{tikzpicture}
+\caption{Pourcentage moyen de footbots continuant à explorer l'environnement après 10.000 steps, selon le nombre de robots}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=0.55\textwidth,
+symbolic x coords={5,10,15},
+xtick=data,
+xlabel=Nombre de footbots,
+ylabel=Nombre de trajets,
+ymin=0,
+ymax=3.2,
+ytick={.5,1,1.5,2,2.5,3},
+      axis x line=bottom,
+      axis y line=left,
+            enlarge x limits=0.2,
+]
+\addplot[ybar,fill=black!25] coordinates {
+(5,   1.5)
+(10,  2.3)
+(15,  1.9)
+};
+\end{axis}
+\end{tikzpicture}
+\caption{Nombre moyens de trajets par footbot faits sur les 1000 steps suivant, après 10.000 steps, selon le nombre de footbots}
+\end{figure}
+
+On voit sur la dernière figure qu'à la fin de l'expérience, les footbots atteignent des rendements comparables à ceux qu'ils avaient en omniscient. On remarque aussi que deux phénomènes se contrebalancent: d'une part, le fait que l'exploration s'améliore avec le nombre de robots, et d'autre part le fait que le rendement individuel moyen diminue avec le nombre de robots. Ceci explique probablement pourquoi le rendement maximum est atteint pour 10 footbots et diminue ensuite.
 
 
+
+
+
+\FloatBarrier
 \section{Perspectives d'amélioration}
 
 \subsection{Optimisation des constantes utilisées}
@@ -197,11 +355,14 @@ Dans les constantes <<haut niveau>> liées à la prise de décision, on retrouve
 
 Parmi ces variables, il est cependant possible de mettre {\ttfamily INIT\_BATT\_SEC} à part car comme son nom l'indique il ne s'agit que du coefficient de sécurité initial puisqu'il est ensuite réévalué constamment durant l'expérience. Il suffit donc de lui donner une valeur largement supérieure à la normale et celle-ci sera abaissée au cours de l'éxécution. Pour jouer sur la prise de risque liée à la gestion de la batterie, il faut utiliser {\ttfamily IDEAL\_NEST\_BATT}.
 
-{\ttfamily ORGN\_SRC\_DST} et {\ttfamily MINE\_PROB\_WHEN\_SRC\_RECVD} sont assez étroitement liées. L'influence de {\ttfamily ORGN\_SRC\_DST} est assez claire, mais lorque cette constante est modifiée, il faut penser à modifier {\ttfamily MINE\_PROB\_WHEN\_SRC\_RECVD} en parallèle. En effet, pour un même nombre de sources <<réellement différentes>> abaisser la première de ces constantes augmente le nombre de sources <<différentes selon les robots>> à découvrir et il est donc judicieux d'augmenter par la même occasion la tendance à l'exploration par le biais de {\ttfamily MINE\_PROB\_WHEN\_SRC\_RECVD}. De même, il peut être intéressant de jouer sur cette dernière constante si l'on dispose d'informations sur le nombre de sources réelles ou selon le but de l'expérience: rendement court-terme, rendement long-terme, découverte d'une proportion maximale des ressources,~\ldots\ Cependant, l'importance de ces deux variables peut-être réduite si l'on implémente les transitions supplémentaires proposées dans le diagramme \ref{fig:genFlowchart}.
+{\ttfamily ORGN\_SRC\_DST} et {\ttfamily MINE\_PROB\_WHEN\_SRC\_RECVD} sont assez étroitement liées. L'influence de {\ttfamily ORGN\_SRC\_DST} est assez claire, mais lorsque cette constante est modifiée, il faut penser à modifier {\ttfamily MINE\_PROB\_WHEN\_SRC\_RECVD} en parallèle. En effet, pour un même nombre de sources <<réellement différentes>> abaisser la première de ces constantes augmente le nombre de sources <<différentes selon les robots>> à découvrir et il est donc judicieux d'augmenter par la même occasion la tendance à l'exploration par le biais de {\ttfamily MINE\_PROB\_WHEN\_SRC\_RECVD}. De même, il peut être intéressant de jouer sur cette dernière constante si l'on dispose d'informations sur le nombre de sources réelles ou selon le but de l'expérience: rendement court-terme, rendement long-terme, découverte d'une proportion maximale des ressources,~\ldots\ Cependant, l'importance de ces deux variables peut-être réduite si l'on implémente les transitions supplémentaires proposées dans le diagramme \ref{fig:genFlowchart}.
 
 Enfin, l'influence de $\varepsilon$ dans la décision $\varepsilon$-greedy est assez claire et bien documentée (voir par exemple \cite{foraging}.). Etant donné les résultats des études statistiques, une valeur plus élevée que celle utilisée ($0.1$) semble peut-être judicieuse, à moins qu'une refonte totale du choix de la source à exploiter ne soit nécessaire.
 
-\subsection{Amélioration plus fondamentales (??)(This is bad)}
+\subsection{Améliorations fondamentales}
 
-TODO
+De nombreuses améliorations et fonctionnalité supplémentaires ont déjà été mentionnée au cours de ce rapport. Ainsi, le passage de l'état \emph{explore} à \emph{exploite} semble le plus problématique, et nous avons évoqué la possibilité de transitions supplémentaires, notamment vers \emph{explore} si l'indice de qualité des sources semble trop mauvais (voir sections \ref{sec:explore} et \ref{sec:mine}).
 
+Dans le but de créer un comportement intelligent, il faudrait essayer d'éliminer le plus possible les variables globales mentionnées ci-dessus et rajouter des possibilités d'adaptation par lui-même du footbot à son environnement. D'autre part, il serait bien sûr intéressant d'adapter des méthodes issues de la swarm-intelligence au problème, comme par exemple l'algorithme des fourmis présenté en \ref{sec:ants}.
+
+Enfin, les tests ont montré que les algorithmes de choix de la source à exploiter et de gestion de l'autonomie pouvaient être nettement améliorés. Ainsi, la gestion de l'autonomie demande peut-être une approche plus <<subtile>> pour tenir compte des obstacles qu'une simple utilisation de coefficients de sécurité.

@@ -8,7 +8,7 @@ A* rajoute au coût <<connu>> du chemin reliant l'origine au n\oe{}ud courant l'
 
 Les algorithmes classiques de recherche du chemin ne sont pas immédiatement adaptables à un environnement partiellement connu ou en cours d'exploration. Des alternatives existent cependant, parmi lesquelles l'utilisation de l'intelligence en essaim, qui s'inspire en partie  des comportements originaux et très efficaces déjà présents dans la nature.
 
-\section{Algorithme des fourmis}
+\section{Algorithme des fourmis\label{sec:ants}}
 
 Cet algorithme est basé sur le comportement de certaines colonies de fourmis qui communiquent indirectement par dépôts de phéromones. Il se présente ainsi: lorsqu'une fourmi trouve une source de nourriture, elle dépose, lors de son retour vers la fourmilière, des phéromones tout au long du chemin qu'elle emprunte. Les autres fourmis suivent cette piste de phéromones pour exploiter la source de nourriture et déposent elles aussi des phéromones sur le chemin du retour, qui peut parfois être différent de la piste suivie initialement.
 
