@@ -4,16 +4,14 @@ Comme il a été présenté dans l'introduction sur l'intelligence artificielle,
 
 Tout d'abord, il est intéressant de se pencher sur le lien entre les paramètres physiques du robot et la manière dont celui-ci peut effectuer l'action simple «se rendre d'un point A à un point B» dans le cas où le robot agit seul dans un environnement sans obstacles. Ensuite, nous verrons comment le robot peut s’accommoder des obstacles (fixes, prévisibles) et autres robots (mobiles, imprévisibles) à partir d'une ou plusieurs de ces actions simples.
 
-\begin{wrapfigure}{r}{0.3\textwidth}
+L'effecteur dont un footbot dispose afin de se déplacer est une paire de roues dont les vitesses peuvent être fixées de manière indépendante.A chaque instant, les seuls deux mouvements auxquels peut accéder le robot sont donc une translation parallèle aux roues et une rotation autour d'un point au milieu de l'axe des roues. La mécanique~\cite{meca} nous indique que la\begin{wrapfigure}{r}{0.3\textwidth}
+\centering
+  \includegraphics[width=0.2\textwidth]{pics/robotWheels.png}
   \vspace{-1em}
-  \begin{center}
-    \includegraphics[width=0.15\textwidth]{pics/robotWheels.png}
-  \end{center}
-  \vspace{-2em}
   \caption{Signification physique de \(v_r,\: v_l,\: v_g \; et \; \omega_g \) \cite{argosSite1}}
   \vspace{-2em}
-  \end{wrapfigure}
-L'effecteur dont un footbot dispose afin de se déplacer est une paire de roues dont les vitesses peuvent être fixées de manière indépendante. A chaque instant, les seuls deux mouvements auxquels peut accéder le robot sont donc une translation parallèle aux roues et une rotation autour d'un point au milieu de l'axe des roues. La mécanique~\cite{meca} nous indique que la composition de ces deux mouvements est suffisante pour permettre au robot de se déplacer librement dans un plan mais surtout, elle nous donne la relation entre les vitesses des deux roues et la vitesse générale ainsi que la vitesse de rotation du robot:
+\end{wrapfigure} composition de ces deux mouvements est suffisante pour permettre au robot de se déplacer librement dans un plan mais surtout, elle nous donne la relation entre les vitesses des deux roues et la vitesse générale ainsi que la vitesse de rotation du robot:
+
 \begin{equation}
 \begin{cases}
 v_g=\frac{v_r+v_l}{2}\\
@@ -33,8 +31,8 @@ A partir de cette loi des vitesses, il est aisé de construire un algorithme per
   \WHILE{goal not reached}
     \STATE update footbot position and orientation
     \STATE calculate \( \theta \equiv\) angle between the direction of the goal from the footbot and footbot orientation
-    \STATE \( right\:velocity = \) convergence(\(\theta,\:SPEED\))
-    \STATE \( left\:velocity = 2 \times SPEED-right\:velocity\) \COMMENT{so that overall speed stays equal to SPEED}
+    \STATE \( v_{right} = \) convergence\( (\theta,\:SPEED) \)
+    \STATE \( v_{left} = 2 \times SPEED-v_{right}\) \COMMENT{so that overall speed stays equal to SPEED}
   \ENDWHILE
 \end{algorithmic}
 \end{algorithm}
@@ -71,8 +69,8 @@ Une première manière de permettre au robot d'éviter des obstacles est d'activ
     \STATE update footbot position and orientation
     \STATE find the direction which is closest to goal direction amongst directions with the furthest or no obstacles
     \STATE find \( \theta \equiv\) angle between footbot orientation and this optimal direction
-    \STATE \( right\:velocity \gets\) convergence(\(\theta,\:SPEED\))
-    \STATE \( left\:velocity \gets 2 \times SPEED-right\:velocity\) \COMMENT{so that overall speed stays equal to SPEED}
+    \STATE $v_{right}=$ convergence$(\theta,\:SPEED)$
+    \STATE \( v_{left}= 2 \times SPEED-v_{right}\)
   \ENDWHILE
 \end{algorithmic}
 \end{algorithm}
@@ -91,18 +89,18 @@ La manière la plus directe de permettre au footbot d'éviter des obstacles ou a
 \begin{algorithmic}
   \WHILE{goal not reached}
     \STATE update footbot position and orientation
-    \STATE read proximity sensor \COMMENT{or whatever other sensor in use}
+    \STATE read proximity sensor \COMMENT{or whatever other sensor used}
     \IF{no obstacles too close}
       \STATE do previous convergence
     \ELSE
-      \STATE \( right\:velocity = \) avoidance(proximity sensor reading, \(SPEED\))
+      \STATE \( v_{right} = \) avoidance$(\text{proximity sensor reading, }SPEED)$
     \ENDIF
-    \STATE \( left\:velocity = 2 \times SPEED-right\:velocity\) \COMMENT{so that overall speed stays equal to SPEED}
+    \STATE \( v_{left} = 2 \times SPEED-v_{left}\)
   \ENDWHILE
 \end{algorithmic}
 \end{algorithm}
 
-Où avoidance(proximity sensor reading, $SPEED$) fixe la routine d'évitement du robot. Son implémentation est très libre et peut fortement varier en fonction du capteur utilisé pour détecter les obstacles. On peut par exemple utiliser le senseur \emph{proximity} du footbot, qui associe à 24 directions autour du robot une valeur entre zéro et un: une valeur zéro indique qu'aucun obstacle n'est perçu à moins de 10cm dans la direction donnée tandis qu'une valeur supérieure indique qu'un objet a été détecté. Cette valeur augmente au fur et à mesure que le robot se rapproche de l'obstacle.~\cite{argosSite1}
+Où avoidance(proximity sensor reading, $SPEED$) fixe la routine d'évitement du robot. Son implémentation est très libre et peut fortement varier en fonction du capteur utilisé pour détecter les obstacles. On peut par exemple utiliser le senseur \emph{proximity} du footbot, qui associe aux 24 directions autour du robot une valeur entre zéro et un: une valeur zéro indique qu'aucun obstacle n'est perçu à moins de 10cm dans la direction donnée tandis qu'une valeur supérieure indique qu'un objet a été détecté. Cette valeur augmente au fur et à mesure que le robot se rapproche de l'obstacle.~\cite{argosSite1}
 
 Dans notre projet nous avons choisi
 \[avoidance(dir, prox)=
@@ -118,23 +116,21 @@ Où $ 1 \leq dir \leq 12 $ est la direction de l'obstacle perçu le plus proche 
 
 Additionnellement, il est possible d'utiliser le capteur \emph{short range} du \emph{distance scanner} pour que le robot puisse déjà commencer à dévier sa trajectoire s'il détecte des obstacles proche de moins de 30cm~\cite{argosSite1}. Ceci permet de déclencher plus tôt le même évitement aux constantes numériques près (évitement moins brusque) que ci-dessus. Cet évitement est beaucoup plus sûr que le premier évitement présenté, tout en étant forcément plus souple que l'évitement <<d'urgence>> précédent.
 
-De plus, les capteurs \emph{short range} et \emph{long range} sont des capteurs rotatifs, ce qui signifie que la table des mesures n'est pas complètement renouvelée à chaque pas\footnote{D'où la nécessité de rafraîchir les tables de mesures de la manière qui est faite au listing \ref{lst:updateObstaclesTable}.}. Les deux capteurs étant orientés perpendiculairement, il est donc avantageux de les utiliser tous les deux afin de ne pas avoir de direction pour laquelle la dernière mesure est <<trop vieille>>.
+De plus, les capteurs \emph{short range} et \emph{long range} sont des capteurs rotatifs, ce qui signifie que la table des mesures n'est pas complètement renouvelée à chaque pas.\footnote{D'où la nécessité de rafraîchir les tables de mesures de la manière qui est faite au listing \ref{lst:updateObstaclesTable}.} Les deux capteurs étant orientés perpendiculairement, il est donc avantageux de les utiliser tous les deux afin de ne pas avoir de direction pour laquelle la dernière mesure est <<trop vieille>>.
 
-\vspace{2em}
+\vspace{1em}
 Grâce aux différentes routines élémentaires présentées ci-dessus, il est donc possible de construire une solution pratique à la partie déplacement du cahier des charges. L'implémentation détaillée des routines d'évitement supplémentaire est donnée dans l'annexe~\ref{app:implEvitClose}.
 
 \section{Déplacement selon un chemin précalculé}
 
 Il est cependant possible d'améliorer cette solution en fonction de la connaissance de son environnement dont dispose le robot. Ainsi, dans le cas omniscient ou si le robot est capable de construire une carte de son environnement reprenant la position des différents obstacles il peut-être judicieux d'utiliser un algorithme de recherche du plus court chemin. La manière la plus directe de faire est de donner au footbot une liste de points successifs qui le mèneront au goal final. Ceci  permet de réutiliser facilement les algorithmes déjà présentés tout en étant parfaitement compatible avec les valeurs de retour typiques d'un algorithme de recherche du plus court chemin. En effet, la plupart de ces algorithmes utilisent une représentation en graphe d'un environnement. La valeur de retour d'une telle recherche est donc une liste des nœuds qu'il faut parcourir dans le graphe afin d'arriver au but final, ce qui est précisément ce que cet algorithme fait.
-\begin{algorithm}
+\begin{algorithm}[H]
 \caption{Convergence avec chemin précalculé}
 \label{pathConvergence}
 \begin{algorithmic}
   \REQUIRE intermediate goals list $\equiv$ list of points which lead to the goal while avoiding the obstacles
   \FOR{intermediate goal in intermediate goals list}
   \WHILE{intermediate goal not reached}
-    \STATE update footbot position and orientation
-    \STATE read proximity sensors \COMMENT{or whatever other sensor in use}
     \IF{no obstacles too close}
       \STATE do greedy avoidance towards intermediate goal
     \ELSE
@@ -241,6 +237,8 @@ function obstacleAvoidance(goalAngle, obstaclesTable)
   getToGoal(bestAngle, CONVERGENCE)
 end
   \end{lstlisting}
+
+  \clearpage
   \begin{lstlisting}[caption=Fonction getToGoal]
 function getToGoal(angle, conv)
    if angle>=0 then --goal is to the left
@@ -280,6 +278,7 @@ function readProxSensor()
 end
   \end{lstlisting}
 
+\clearpage
   \begin{lstlisting}[caption=Fonction emergencyAvoidance]
 function emergencyAvoidance(emerProx,emerDir)
   local vLeft, vRight
@@ -304,9 +303,10 @@ Le déplacement présenté jusqu'à présent est purement déterministe. Dans un
 
 Les deux solutions les plus couramment utilisées sont l'instauration de priorités, où l'introduction d'une composante aléatoire comme par exemple l'\emph{exponential backoff} en télécommunication, où, après $i$ collisions, les deux agents tentent d'envoyer le paquet après un temps tiré aléatoirement dans $[0,t^{max}_i]$ avec $t^{max}_i$ grandissant exponentiellement en fonction de $i$.~\cite{wiki:backoff}
 
-Dans notre projet, après une collisions, les deux footbots tirent aléaoirement une nouvelle vitesse inférieure ou égale à la vitesse de base et gardent cette nouvelle vitesse pendant un bref temps après la collision, avant de reprendre leur vitesse originale.
-
+Dans notre projet, après une collisions, les deux footbots tirent aléaoirement une nouvelle vitesse inférieure ou égale à la vitesse de base et gardent cette nouvelle vitesse pendant un bref temps après la collision, avant de reprendre leur vitesse originale, ce qui empêche que la collision de se répéter.
+\vspace{-1em}
 \subsection{Implémentation en Lua}
+\vspace{-0.5em}
 \begin{lstlisting}[caption=Vitesse aléaoire temporaire après évitement]
 function move(obstaclesTable, obstacleProximity,
               obstacleDirection, goalX,goalY)

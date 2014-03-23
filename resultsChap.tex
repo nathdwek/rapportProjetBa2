@@ -4,7 +4,7 @@ Le comportement créé permet de remplir tous les objectifs énoncés par le cah
 
 \subsection{Efficacité de l'exploitation}
 
-Nous avons d'abord évalué les performances de l'exploitation seule, en donnant au robots la connaissance des sources présentes. Les indicateurs utilisés sont le nombre moyens de trajets totaux et par source, après 10.000 steps, en fonction du nombre de robots, et le nombre de trajets totaux par robot après 10.000 steps. Ceci permet de juger de l'efficacité du déplacement mais aussi du choix de ressource à exploiter. A cet effet, nous utilisons volontairement une répartition de source assez déséquilibrée.
+Nous avons d'abord évalué les performances de l'exploitation seule, en donnant au robots la connaissance des sources présentes. Les indicateurs utilisés sont le nombre moyens de trajets totaux et par source après 10.000 steps, en fonction du nombre de robots, et le nombre de trajets totaux par robot après 10.000 steps. Ceci permet de juger de l'efficacité du déplacement mais aussi du choix de ressource à exploiter. A cet effet, nous utilisons volontairement une répartition de source assez déséquilibrée.
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.7\textwidth]{pics/initArenaNames.png}
@@ -84,7 +84,7 @@ ytick={40,80,120,160},
 \end{tikzpicture}
 \subcaption{15 footbots}
 \end{subfigure}
-\caption{Nombre de trajets effectués par source au bout de 10000 steps, selon le nombre de robots}
+\caption{Nombre de trajets effectués par source au bout de 10.000 steps, selon le nombre de robots}
 \end{figure}
 
 \begin{figure}[htbp]
@@ -108,10 +108,10 @@ ytick={5,10,15,20,25},
 };
 \end{axis}
 \end{tikzpicture}
-\caption{Nombre de trajets effectués par footbot au bout de 10000 steps, selon le nombre de footbots}
+\caption{Nombre de trajets effectués par footbot au bout de 10.000 steps, selon le nombre de footbots}
 \end{figure}
 
-On voit que les robots sont effectivement capables de distinguer la source la plus rentable, mais que l'indice de qualité d'une source utilisé par la décision $\varepsilon$-greedy est peut-être inadapté. En effet, lorsqu'on augmente le nombre de robots, on n'assiste à une meilleure répartition des robots sur les trois sources mais ce n'est pas suffisant. En effet, les robots continuent à utiliser massivement la source A la plus proche, au point que celle-ci n'est visiblement plus rentable car les robots embouteillent complètement la zone entre le nid et cette source. La conséquence directe est que le rendement par robot décroît énormément lorsqu'on augmente le nombre de footbots.
+On voit que les robots sont effectivement capables de distinguer la source la plus rentable, mais que l'indice de qualité d'une source utilisé par la décision $\varepsilon$-greedy est peut-être inadapté. En effet, lorsqu'on augmente le nombre de robots, on assiste à une meilleure répartition des robots sur les trois sources mais ce n'est pas suffisant. En effet, les robots continuent à utiliser massivement la source A la plus proche, au point que celle-ci n'est visiblement plus rentable car les robots embouteillent complètement la zone entre le nid et cette source. La conséquence directe est que le rendement par robot décroît énormément lorsqu'on augmente le nombre de footbots.
 
 Le pourcentage de robots tombés en panne de batterie au bout de 10.000 steps nous aide à mieux mettre ce phénomène en évidence. Les pannes qui apparaissent lorsqu'on augmente le nombre de footbots concernent majoritairement des robots qui cherchaient à exploiter la source A et qui se sont retrouvé complètement bloqués sur le chemin.
 
@@ -193,7 +193,7 @@ Les constantes sont réparties en trois groupes: les constantes <<bas-niveau>>, 
 
 Dans les constantes liées au mouvement, on retrouve la convergence $\kappa$ utilisée dans le reste des situations ainsi que les deux paires de paramètres $\alpha$ et $\beta$ qui sont apparus dans l'évitement d'obstacles proches en \ref{sec:emerAvoid} et l'évitement intermédiaire en \ref{sec:mediAvoid}\footnote{Pour rappel, ces deux évitements sont les mêmes aux constantes et à la portée des capteurs utilisés près}. On retrouve aussi les paramètres utilisés pour introduire une composante aléatoire à l'évitement dans l'annexe \ref{appsec:randomAvoidance}. Ces constantes influent sur la qualité générale du mouvement à travers toute l'expérience, et il existe probablement une plage de valeurs qui optimisent le mouvement dans l'écrasante majorité des configurations. En d'autres termes, elles ne permettent pas d'adapter le comportement des footbots d'une situation a une autre.
 
-Dans les constantes <<haut niveau>> liées à la prise de décision, on retrouve la distance minimale entre deux sources pour qu'elles soient considérées comme originales, la probabilité qu'un footbot commence à miner les ressources qu'il connaît lorsqu'il reçoit une nouvelle source, le coefficient de sécurité initial utilisé dans la gestion de l'autonomie, le résidu de batterie idéal que doit avoir le robot lorsqu'il rentre au nid pour se ravitailler, ainsi que la valeur du $\varepsilon$ utilisé dans la décision $\varepsilon$-greedy. Ces variables ont elles une influence majeure sur le comportement final des robots. Tout travail d'optimisation ultérieur devrait se pencher en priorité sur ces constantes-ci.
+Dans les constantes <<haut niveau>> liées à la prise de décision, on retrouve la distance minimale entre deux sources pour qu'elles soient considérées comme originales, la probabilité qu'un footbot commence à miner les ressources qu'il connaît lorsqu'il reçoit une nouvelle source, le coefficient de sécurité initial $\mu_{scrity}$ utilisé dans la gestion de l'autonomie, le résidu de batterie idéal $\delta_{scrity}$ que doit avoir le robot lorsqu'il rentre au nid pour se ravitailler, ainsi que la valeur du $\varepsilon$ utilisé dans la décision $\varepsilon$-greedy. Ces variables ont elles une influence majeure sur le comportement final des robots. Tout travail d'optimisation ultérieur devrait se pencher en priorité sur ces constantes-ci.
 
 Parmi ces variables, il est cependant possible de mettre {\ttfamily INIT\_BATT\_SEC} à part car comme son nom l'indique il ne s'agit que du coefficient de sécurité initial puisqu'il est ensuite réévalué constamment durant l'expérience. Il suffit donc de lui donner une valeur largement supérieure à la normale et celle-ci sera abaissée au cours de l'éxécution. Pour jouer sur la prise de risque liée à la gestion de la batterie, il faut utiliser {\ttfamily IDEAL\_NEST\_BATT}.
 

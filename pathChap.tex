@@ -15,3 +15,6 @@ Cet algorithme est basé sur le comportement de certaines colonies de fourmis qu
 Comme les fourmis suivent préférentiellement les pistes comportant le plus de phéromones, et puisque les phéromones s'évaporent après un certain laps de temps, le chemin le plus court devient rapidement la piste dominante, car plus de fourmis le traversent et déposent des phéromones par unité de temps. De plus, comme les autres pistes sont alors délaissées, cet algorithme converge très fortement car le chemin le plus court devient rapidement l'unique chemin marqué.~\cite{antOpti}
 
 Cette approche a été utilisée par \cite{pheromonesForaging}, ce qui montre qu'il est possible d'appliquer cet algorithme aux footbots dans ARGoS. Ici, ce sont des messages transmis de robot à robot qui jouent le rôle des phéromones, et la rapidité avec laquelle un seule message traverse toute une chaîne de robot qui indique l'<<intensité>> d'une piste; mais les principes fondamentaux restent les mêmes.
+
+\vspace{1em}
+Par manque de temps, nous n'avons pas pu implémenter une recherche du chemin efficace en non-omniscient comme ci-dessus, et nous avons choisi de ne pas perdre de temps à implémenter une recherche ``classique'' car elle serait inutile en non-omniscient, qui est le but final du projet.

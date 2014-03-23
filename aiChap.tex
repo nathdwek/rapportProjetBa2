@@ -7,7 +7,7 @@ De plus, dans un système multi-agents, un choix d'action peut s'avérer bénéf
 
 Pour prendre un point de vue plus <<haut niveau>> sur cette problématique, il est possible d'utiliser le concept de machine à état et de diagramme d'état pour décrire un comportement. L'agent commence dans un état initial et peut à partir de cet état accomplir un certain nombre d'actions qui l'amènent dans d'autres états, à partir desquels d'autres actions et transitions sont possibles, et ainsi de suite. Ceci définit l'espace des états du système, c'est à dire l'ensemble de tous les états accessibles par une séquence d'action à partir de l'état initial. Cet espace des états peut être vu comme un graphe ou les n\oe{}uds représentent les états et les branches les transitions. Il en découle la notion de chemin (et de coût associé) représentant une séquence d'états reliés par une séquence d'actions. Cette approche est utilisée dans la section \ref{sec:tree}.~\cite{foraging, AIBrique}
 
-D'autre part, un agent reçoit des \emph{percepts} par l'intermédiaire de ses capteurs. L'\emph{agent} réagit alors en exerçant une action sur l'environnement grâce à ses \emph{effecteurs}. Il est aussi possible de découper le comportement autour de ce cycle, et c'est ce qui est fait par ARGoS, nous y reviendrons longuement dans la suite.
+D'autre part, un agent reçoit des percepts par l'intermédiaire de ses capteurs. L'agent réagit alors en exerçant une action sur l'environnement grâce à ses effecteurs. Il est aussi possible de découper le comportement autour de ce cycle, et c'est ce qui est fait par ARGoS, nous y reviendrons longuement dans la suite.
 \begin{figure}[htb]
 \centering
 \begin{tikzpicture}[node distance = 2cm,>=stealth, auto]

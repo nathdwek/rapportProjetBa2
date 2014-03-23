@@ -32,7 +32,7 @@ Les opérations communes à tous les états sont
   \item Lecture du capteur \emph{distance scanner (short range)} parce qu'il est utilisé en pratique quel que soit l'état du robot.
 \end{itemize}
 
-A part pour l'évitement d'urgence, toutes les décisions sont donc uniquement prises par les fonctions \emph{doMine} et \emph{doExplore}. La fonction \emph{doCommon} se contente de leur envoyer des signaux sous la forme des diverses variables renvoyées \emph{onSource, backHome,\ldots}.
+A part pour l'évitement d'urgence, toutes les décisions sont donc uniquement prises par les fonctions \emph{doMine} et \emph{doExplore}. La fonction \emph{doCommon} se contente de leur envoyer des signaux sous la forme des diverses variables \emph{onSource, backHome, \ldots} qu'elle renvoie.
 
 L'implémentation détaillée de la fonction doCommon est donnée dans l'annexe \ref{appsec:doCommon}. L'évitement d'urgence est celui présenté dans la section \ref{sec:emerAvoid}, tandis que pour retourner le plus rapidement possible au nid, le footbot utilise simplement le déplacement présenté au chapitre \ref{chap:move} avec pour goal le centre du nid.
 
@@ -40,11 +40,11 @@ L'implémentation détaillée de la fonction doCommon est donnée dans l'annexe 
 
 Tous les robots sont initialisés dans l'état \emph{explore}. Dans cet état, ils se déplacent selon une méthode d'exploration donnée jusqu'à recevoir le signal \emph{foundSource} ou \emph{gotSource}. Le premier signal signifie que le footbot a lui-même trouvé une nouvelle source, tandis que le second signal indique qu'une nouvelle source lui a été transmise. C'est la fonction \emph{doCommon} qui s'assure qu'une source potentielle est effectivement originale et la stocke alors dans la liste des sources connues. Cette liste est partagée avec les autres robots (voir section \ref{sec:commu}) et utilisée lorsque le robot est dans l'état \emph{exploite}.
 
-Dans le cas où le robot a trouvé une source, il passe directement dans l'état exploite. Par contre, dans le cas où le robot reçu une nouvelle source, il décide aléatoirement s'il continue à explorer ou s'il se met à exploiter la ou les ressources qu'il connaît. La communication entre robot étant relativement efficace, ceci permet d'éviter que tous les robots se contentent d'une unique source dès qu'un seul individu en a fait la découverte. Une amélioration possible serait de permettre au robot de passer de l'état \emph{explore} à l'état \emph{exploite} même en l'absence de découverte originale s'il estime avoir déjà passé trop de temps à explorer.
+Dans le cas où le robot a trouvé une source, il passe directement dans l'état exploite. Par contre, dans le cas où le robot reçu une nouvelle source, il décide aléatoirement s'il continue à explorer ou s'il se met à exploiter la ou les ressources qu'il connaît. La diffusion de l'information entre robots que nous avons mis en place étant très rapide, ceci permet d'éviter que tous les robots se contentent d'une unique source dès qu'un seul individu en a fait la découverte. Une amélioration possible serait de permettre au robot de passer de l'état \emph{explore} à l'état \emph{exploite} même en l'absence de découverte originale s'il estime avoir déjà passé trop de temps à explorer.
 
 Le parcours d'exploration pris par le robot est une composante importante et complexe de l'efficacité de la phase d'exploration. Des travaux précédents montrent cependant qu'une marche aléatoire (voir \cite{foraging} par exemple où la marche d'exploration est décrite en détail) peut suffire lorsque le nombre de robots est assez élevés, et leurs interactions suffisament développées. Nous nous limitons donc à un simple modèle de diffusion: les robots se déplacent en ligne droite et rebondissent sur tous les obstacles qu'ils rencontrent à la manière de simples particules. Ceci permet d'assurer que les robots migrent des zones les plus concentrées en footbots vers les zones les moins concentrées et que, plus globalement, les robots occupent tout l'espace disponible.
 
-Le modèle utilisé est assez satisfaisant en théorie et en pratique mais n'est pas tout à fait adapté pour plusieurs raisons. Tout d'abord, la gestion de l'autonomie entraîne bien évidemment des retours fréquents des robots vers le nid, ce qui annule en partie l'effet désiré d'homogénéiser la concentration de robots. Ceci devrait être mieux pris en compte. D'autre part, ce modèle permet d'éviter relativement bien l'exploration d'une même zone par un nombre élevé de robots, mais ne permet pas de réellement privilégier d'éventuelles <<zones d'ombres>> qui n'ont encore jamais été explorées. Cependant, le principal facteur limitant semble bien être la portée extrèmement limitée des capteurs de couleur de sol.
+Le modèle utilisé est assez satisfaisant en théorie et en pratique mais n'est pas tout à fait adapté pour plusieurs raisons. Tout d'abord, la gestion de l'autonomie entraîne bien évidemment des retours fréquents des robots vers le nid, ce qui annule en partie l'effet désiré d'homogénéiser la concentration de robots. Ceci devrait être mieux pris en compte. D'autre part, ce modèle permet d'éviter relativement bien l'exploration d'une même zone par un nombre élevé de robots, mais ne permet pas de réellement privilégier d'éventuelles <<zones d'ombres>> qui n'ont encore jamais été explorées. Cependant, le principal facteur limitant semble bien être la faible portée des capteurs de couleur de sol.
 
 L'implémentation du modèle de diffusion est détaillée en annexe \ref{appsec:gasLike}.
 
@@ -52,9 +52,9 @@ L'implémentation du modèle de diffusion est détaillée en annexe \ref{appsec:
 
 Une fois passé dans l'état \emph{exploite}, le footbot fait simplement des allers-retours entre une des ressources connues et le nid en utilisant les méthodes de déplacement développées au chapitre \ref{chap:move}. Les opérations communes ont toujours lieu et le footbot continue donc à communiquer avec les autres robots et à lire la couleur du sol. Il reste donc à traiter du choix de la source à exploiter.
 
-Ce choix est important: il est possible d'augmenter l'efficacité de l'exploitation en incitant les robots à exploiter les sources fournissant le meilleur rendement. Différentes méthodes peuvent être utilisés à cet effet, nous utilisons l'algorithme $\varepsilon$-greedy car il est simple, compréhensible, et utilise une seule variable qui représente directement le degré d'exploration~\cite{foraging}. Cet algorithme sélectionne avec une probabilité $1-\varepsilon$ la source au meilleur rendement et avec une probabilité $\varepsilon$ une source au hasard parmi les sources moins rentables.
+Ce choix est important: il est possible d'augmenter l'efficacité de l'exploitation en incitant les robots à exploiter les sources fournissant le meilleur rendement. Différentes méthodes peuvent être utilisés à cet effet, nous utilisons l'algorithme $\varepsilon$-greedy car il est simple, compréhensible, et utilise une seule variable qui représente directement le degré d'exploration~\cite{foraging}. Cet algorithme sélectionne avec une probabilité $1-\varepsilon$ la source au meilleur rendement et avec une probabilité $\varepsilon$ une source au hasard parmi les sources moins rentables. Pour ce faire, nous devons aussi mettre en place un indice de qualité pour chaque source, qui est réévalué à chaque trajet:
 
-\begin{algorithm}
+\begin{algorithm}[H]
 \caption{Mise en place d'un score de qualité des sources}
 \begin{algorithmic}
   \REQUIRE List of available ressources with their quality score
@@ -67,7 +67,7 @@ Ce choix est important: il est possible d'augmenter l'efficacité de l'exploitat
 \end{algorithmic}
 \end{algorithm}
 
-Il est en fait plus sensé de mettre à jour l'indice de qualité non pas après un simple aller, mais après un aller-retour complet. Cependant, ceci aurait été plus difficile à mettre en pratique dans notre cas, et nous avons donc choisi la solution présentée ci-dessus. Le nouveau score de qualité est simplement donné par le nombre de trajets faits vers une source divisé par la quantité totale de batterie dépensée pour faire ces trajets.
+Il est en fait plus sensé de mettre à jour l'indice de qualité non pas après un simple aller, mais après un aller-retour complet. Cependant, ceci aurait été plus difficile à mettre en pratique dans notre cas, et nous avons donc choisi la solution présentée ci-dessus. Le score de qualité est simplement donné par le nombre de trajets faits vers une source divisé par la quantité totale de batterie dépensée pour faire ces trajets.
 
 L'utilisation d'une décision $\varepsilon$-greedy nécessitant déjà de trouver le meilleur indice de qualité, une amélioration possible serait de donner la possibilité au footbot de repasser dans l'état \emph{explore} si le meilleur score dans la liste passe en dessous d'une certaine valeur critique. Cependant, il faudrait alors aussi permettre au footbot de changer d'état dans l'autre sens à d'autres occasions que seulement s'il trouve ou reçoit une nouvelle source, comme il a été évoqué dans la section \ref{sec:explore}.
 
@@ -92,7 +92,7 @@ Vu la structure en boucle demandée par ARGoS, et grâce au pas d'éxécution as
 
 Dans notre projet, les ressources étant stockées sous forme de liste, les footbots diffusent à chaque pas la i\ieme{} source dans la liste où i est le numéro du pas courant modulo la longueur de la liste des ressources connues.
 
-Une source étant représentée par un couple de nombre à virgule flottante compris entre -500 et 500, la conversion suivante est utilisée pour transmettre l'information:
+Une source étant représentée par un couple de nombres à virgule flottante compris entre -500 et 500, la conversion suivante est utilisée pour transmettre l'information:
 
 \vspace{1em}
 \makebox[\textwidth][c]{%
@@ -198,6 +198,7 @@ function doCommon()
 end
 \end{lstlisting}
 
+\clearpage
 \subsection{Détection de nouvelle sources et du nid}
 
 \begin{lstlisting}[caption=fonction checkGoalReached]
@@ -243,7 +244,7 @@ function floorIsBlack()
 end
 \end{lstlisting}
 
-
+\clearpage
 \begin{lstlisting}[caption=Vérifier l'originalité de la source]
 function sourceIsOriginal(x, y, rsc)
   local i=1
@@ -369,6 +370,7 @@ function chooseNewSource(rsc)
 end
 \end{lstlisting}
 
+\clearpage
 \begin{lstlisting}[caption=Evaluation de la qualité de la source]
 function evalSource(sourceId, battery)
    ressources[sourceId].bSpent=ressources[sourceId].bSpent+(100-battery)
@@ -376,48 +378,6 @@ function evalSource(sourceId, battery)
                               /ressources[sourceId].bSpent
 end
 \end{lstlisting}
-
-\appsec{Implémentation en Lua de la gestion de l'autonomie\label{appsec:battery}}
-\begin{lstlisting}[caption=appel par doCommon]
-function doCommon()
-  ...
-  battery=battery-BATT_BY_STEP
-  backForBattery = backForBattery
-                   or battery-batterySecurity
-                              *BATT_BY_STEP
-                              *math.sqrt(posX^2+posY^2)
-                              /BASE_SPEED<IDEAL_NEST_BATT
-  --We use the "or" so that backForBattery stays true once
-  --it has been triggered. Only checkGoalReached can set
-  --it back to false
-  ...
-end
-\end{lstlisting}
-
-\begin{lstlisting}[caption=Réévaluation de batterySecurity]
-function checkGoalReached()
-  ...
-  elseif seeBlack and math.sqrt((posX)^2+(posY)^2)<=70 then
-  ... --You're back in the nest
-    if backForBattery then
-      batterySecurity=updateBattCoeff(battery,batterySecurity)
-      backForBattery=false
-    end
-    battery=100
-  end
-  ...
-end
-
-function updateBattCoeff(battery, batterySecurity)
-  if battery>IDEAL_NEST_BATT then
-    batterySecurity=batterySecurity-(battery-IDEAL_NEST_BATT)*.07
-  else
-    batterySecurity=batterySecurity-(battery-IDEAL_NEST_BATT)*.1
-  end
-  return batterySecurity
-end
-\end{lstlisting}
-
 
 \appsec{Implémentation en Lua de la communication\label{appsec:commu}}
 
@@ -467,7 +427,7 @@ function sgnIn(n)
 end
 \end{lstlisting}
 
-
+\clearpage
 \subsection{Réception de message}
 
 \begin{lstlisting}[caption=Ecoute du capteur à chaque pas]
@@ -512,3 +472,44 @@ end
 \end{lstlisting}
 
 \end{subappendices}
+
+\appsec{Implémentation en Lua de la gestion de l'autonomie\label{appsec:battery}}
+\begin{lstlisting}[caption=appel par doCommon]
+function doCommon()
+  ...
+  battery=battery-BATT_BY_STEP
+  backForBattery = backForBattery
+                   or battery-batterySecurity
+                              *BATT_BY_STEP
+                              *math.sqrt(posX^2+posY^2)
+                              /BASE_SPEED<IDEAL_NEST_BATT
+  --We use the "or" so that backForBattery stays true once
+  --it has been triggered. Only checkGoalReached can set
+  --it back to false
+  ...
+end
+\end{lstlisting}
+
+\begin{lstlisting}[caption=Réévaluation de batterySecurity]
+function checkGoalReached()
+  ...
+  elseif seeBlack and math.sqrt((posX)^2+(posY)^2)<=70 then
+  ... --You're back in the nest
+    if backForBattery then
+      batterySecurity=updateBattCoeff(battery,batterySecurity)
+      backForBattery=false
+    end
+    battery=100
+  end
+  ...
+end
+
+function updateBattCoeff(battery, batterySecurity)
+  if battery>IDEAL_NEST_BATT then
+    batterySecurity=batterySecurity-(battery-IDEAL_NEST_BATT)*.07
+  else
+    batterySecurity=batterySecurity-(battery-IDEAL_NEST_BATT)*.1
+  end
+  return batterySecurity
+end
+\end{lstlisting}
