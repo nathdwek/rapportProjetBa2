@@ -4,7 +4,7 @@ Dans le cas où les footbots disposent réellement d'une description complète d
 
 Dijkstra évalue le coût du chemin courant en calculant simplement la somme des coûts depuis le n\oe{}ud initial. Pour cette raison, il ne privilégie a priori aucune direction d'exploration et son éxécution ne se termine que si tous les n\oe{}uds accessibles ont été évalués ou si le n\oe{}ud but a été <<visité>>\footnote{Dans le cas de Dijkstra, <<visité>> signifie que tous les n\oe{}uds adjacents ont été évalués.}.
 
-A* rajoute au coût <<connu>> du chemin reliant l'origine au n\oe{}ud courant l'évaluation heuristique du coût du chemin reliant le point courant au but. Ceci permet de guider la recherche et de l'arrêter plus tôt si on a confiance en l'heuristique utilisée.
+A* rajoute au coût <<connu>> du chemin reliant l'origine au n\oe{}ud courant l'évaluation heuristique du coût du chemin reliant le point courant au but. Ceci permet de guider la recherche et de l'arrêter plus tôt si on a confiance en l'heuristique utilisée.~\cite{mehlhorn_shortest_2008,genetic2007}
 
 Les algorithmes classiques de recherche du chemin ne sont pas immédiatement adaptables à un environnement partiellement connu ou en cours d'exploration. Des alternatives existent cependant, parmi lesquelles l'utilisation de l'intelligence en essaim, qui s'inspire en partie  des comportement originaux et très efficaces déjà présents dans la nature.
 
