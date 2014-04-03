@@ -16,6 +16,7 @@
 \usepackage{graphicx}
 \usepackage{wrapfig}
 \usepackage{subcaption}
+\usepackage[rgb, x11names]{xcolor}
 
 %\usepackage[a4paper]{geometry}  %PAPER VERSION
 %\setlength{\textheight}{650pt}
@@ -31,6 +32,17 @@
 \usepackage{amssymb}
 
 \usepackage{listings}
+\lstdefinestyle{Lua}{%
+  language=[5.2]Lua,
+  basicstyle=\ttfamily\footnotesize,
+  columns=spaceflexible,
+  keywordstyle=\sffamily\footnotesize,% language keywords
+  keywordstyle=[2]\footnotesize\sffamily\color{RoyalBlue3},% std. library identifiers
+  keywordstyle=[3]\footnotesize\sffamily\color{Purple3},% labels
+  stringstyle=\footnotesize\itshape\color{Coral4},% strings
+  commentstyle=\footnotesize\itshape\color{Green4},% comments
+  identifierstyle=\footnotesize\color{Blue1}
+}
 \lstset{defaultdialect=[5.2]Lua, style=Lua, frame=single}
 
 \usepackage{perpage}
