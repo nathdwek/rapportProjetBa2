@@ -11,6 +11,8 @@ D'autre part, un agent reçoit des percepts par l'intermédiaire de ses capteurs
 \begin{figure}[htb]
 \centering
 \begin{tikzpicture}[node distance = 2cm,>=stealth, auto]
+  \pgfdeclarelayer{background}
+  \pgfsetlayers{background,main}
   \node[rect](envir){\textsc{Environnement}};
   \node[block, below of=envir, yshift=-5em, xshift=-10em](capteurs){Capteurs};
   \node[decision, right of=capteurs, xshift=2.5em](decision){Choix de l'action};
